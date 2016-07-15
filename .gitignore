@@ -1,0 +1,24 @@
+# Dev Files
+.sass-cache/
+node_modules/
+
+# Project Files
+.idea/
+*.sublime-*
+sftp-config.json
+
+# Random Files
+/*.sql
+.DS_Store
+.editorconfig
+
+# Vendor Files
+/vendor/phpdocumentor
+/vendor/doctrine
+/vendor/phpspec
+/vendor/phpunit
+/vendor/sebastian
+/vendor/symfony
+/vendor/webmozart
+/vendor/whatthejeff
+/vendor/bin

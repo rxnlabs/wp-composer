@@ -1,0 +1,26 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+*.gif binary
+*.svn binary
+
+# Ignore differences between minified files
+*.min.css binary -diff
+*.min.js binary -diff
+
+# Ignore files from distribution
+/bin export-ignore
+/coverage export-ignore
+/tests export-ignore
+/vendor/phpdocumentor export-ignore
+/vendor/doctrine export-ignore
+/vendor/phpspec export-ignore
+/vendor/phpunit export-ignore
+/vendor/sebastian export-ignore
+/vendor/symfony export-ignore
+/vendor/webmozart export-ignore
+/vendor/whatthejeff export-ignore
+/vendor/bin export-ignore
