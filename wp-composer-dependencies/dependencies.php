@@ -19,10 +19,17 @@ class Dependencies
 	public $wp_packagist_namespace = array('plugin'=>'wpackagist-plugin', 'theme'=>'wpackagist-theme');
 
 	/**
-	 * URL to the WPackagist site
+	 * Secure URL to the WPackagist site
 	 * @var string
 	 */
 	public $wp_packagist_repo = 'https://wpackagist.org';
+
+	/**
+	 * Unsecure URL to the WPackagist site. Composer repositories should ideally use HTTPS since by default composer is
+	 * configured to allow download assets from HTTPS repository.
+	 * @var string
+	 */
+	public $wp_packagist_repo_non_https = 'http://wpackagist.org';
 
 	/**
 	 * Array of dependencies in the composer file.
@@ -176,6 +183,11 @@ class Dependencies
 			}
 		}
 
+		$add_packagist_repo = function($dependencies){
+			$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+			return $dependencies;
+		};
+
 		try {
 		   // $parser = new \JsonCollectionParser\Parser();
 			$get_real_path = realpath($composer_file);
@@ -192,11 +204,35 @@ class Dependencies
 				$dependencies = [
 					'name'=>'wp-composer-dependencies',
 					'description' => sprintf('Theme and plugin dependencies for the site %s', get_bloginfo('url')),
-					'repositories'=>['type'=>'composer','url'=>$this->wp_packagist_repo],
+					'repositories'=>[['type'=>'composer','url'=>$this->wp_packagist_repo]],
 					'require'=>[]
 				];
+				$dependencies = $add_packagist_repo($dependencies);
 			} else {
 				$dependencies = json_decode($filesystem->read($composer_file), true);
+
+				if (isset($dependencies['repositories'])) {
+					$repo_added_already = false;
+					foreach ($dependencies['repositories'] as &$repo) {
+						if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
+							$repo['url'] = $this->wp_packagist_repo;
+							$repo_added_already = true;
+							break;
+						}
+
+						if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
+							$repo_added_already = true;
+							break;
+						}
+					}
+
+					if ($repo_added_already === false) {
+						$dependencies = $add_packagist_repo($dependencies);
+					}
+				} else {
+					$dependencies = $add_packagist_repo($dependencies);
+				}
+
 				$this->composer_save_path = pathinfo($composer_file)['dirname'];
 			}
 
