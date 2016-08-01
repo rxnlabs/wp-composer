@@ -10,6 +10,10 @@ class WPCLI
 
 	protected $composer;
 
+	/**
+	 * WPCLI constructor.
+	 * @param \rxnlabs\Dependencies $composer
+	 */
 	public function __construct(\rxnlabs\Dependencies $composer)
 	{
 		$this->composer = $composer;
@@ -23,13 +27,93 @@ class WPCLI
 	 */
 	public function registerCommands()
 	{
-		\WP_CLI::add_command('composer plugins add', array($this,'addPlugins'));
-		\WP_CLI::add_command('composer themes add', array($this,'addThemes'));
+		\WP_CLI::add_command('composer plugins', array($this,'plugins'));
+		\WP_CLI::add_command('composer themes', array($this,'themes'));
 		\WP_CLI::add_command('composer add', array($this,'addAllDependencies'));
 	}
 
 	/**
-	 * Add installed plugins to composer.json.
+	 * Perform actions on installed plugins.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <action>
+	 * : The action to perform. Available actions are:
+	 * - "add" action will add installed plugins to composer.json
+	 * - "delete" action will remove plugins from composer.json
+	 *
+	 * [--file]
+	 * : Path to save the composer.json file
+	 *
+	 * [--all]
+	 * : Add plugins found on wordpress.org and plugins not found on wordpress.org. By default only plugins  available on wordpress.org will be added
+	 *
+	 * [--latest]
+	 * : Add current version of plugin installed or specify to always use the latest version from whatever repo the plugin is coming from.
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional argumenets passed to command
+	 * @param array $assoc_args Key based arguments passed to command
+	 * @return true|false True if able to write to a composer.json file, false if unable to write to the file for some reason
+	 */
+	public function plugins($args, $assoc_args = array())
+	{
+		if (isset($args[0])) {
+			switch($args[0]) {
+				case "add":
+					$this->addPlugins($args, $assoc_args);
+					break;
+				default:
+					$message = sprintf('%s is not a valid action', $args[0]);
+					\WP_CLI::warning($message);
+			}
+		}
+	}
+
+	/**
+	 * Perform actions on installed themes.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <action>
+	 * : The action to perform. Available actions are:
+	 * - "add" action will add installed themes to composer.json
+	 * - "delete" action will remove themes from composer.json
+	 *
+	 * [--file]
+	 * : Path to save the composer.json file
+	 *
+	 * [--all]
+	 * : Add themes found on wordpress.org and themes not found on wordpress.org. By default only themes available on wordpress.org will be added
+	 *
+	 * [--latest]
+	 * : Add current version of theme installed or specify to always use the latest version from whatever repo the theme is coming from.
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional argumenets passed to command
+	 * @param array $assoc_args Key based arguments passed to command
+	 * @return true|false True if able to write to a composer.json file, false if unable to write to the file for some reason
+	 */
+	public function themes($args, $assoc_args = array())
+	{
+		if (isset($args[0])) {
+			switch($args[0]) {
+				case "add":
+					$this->addThemes($args, $assoc_args);
+					break;
+				default:
+					$message = sprintf('%s is not a valid action', $args[0]);
+					\WP_CLI::warning($message);
+			}
+		}
+	}
+
+	/**
+	 * Add installed plugins and themes to composer.json
 	 *
 	 * ## OPTIONS
 	 *
@@ -37,18 +121,35 @@ class WPCLI
 	 * : Path to save the composer.json file
 	 *
 	 * [--all]
-	 * : Add plgins found on wordpress.org and plugins not found on wordpress.org. By default only plugins  available on wordpress.org will be added
+	 * : Add themes and plugins found on wordpress.org and themes and plugins not found on wordpress.org. By default only themes and plugins available on wordpress.org will be added
 	 *
 	 * [--latest]
-	 * : Add current version of plugin installed or specify to always use the latest version from whatever repo the plugin is coming from.
+	 * : Add current version of theme or plugin installed or specify to always use the latest version from whatever repo the theme or plugn is coming from.
 	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
+	 *
 	 * @param array $args Positional argumenets passed to command
 	 * @param array $assoc_args Key based arguments passed to command
 	 * @return true|false True if able to write to a composer.json file, false if unable to write to the file for some reason
 	 */
-	public function addPlugins($args, array $assoc_args = array())
+	public function addAllDependencies($args, array $assoc_args = array())
+	{
+		\WP_CLI::run_command(array('composer', 'plugins', 'add'), $assoc_args);
+		\WP_CLI::run_command(array('composer', 'themes', 'add'), $assoc_args);
+	}
+
+	/**
+	 * Add installed plugins to composer.json.
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional arguments passed to command
+	 * @param array $assoc_args Key based arguments passed to command
+	 * @return true|false True if able to write to a composer.json file, false if unable to write to the file for some reason
+	 */
+	private function addPlugins($args, array $assoc_args = array())
 	{
 		$file = '';
 		$all = false;
@@ -78,6 +179,7 @@ class WPCLI
 						} else {
 							$plugin_version = $plugin['version'];
 						}
+						\WP_CLI::line(sprintf('Adding plugin %s. Using version %s',$plugin['name'], $plugin_version));
 						$this->composer->addPluginDependency($plugin['name'], $plugin_version);
 					}
 				} else {
@@ -86,15 +188,20 @@ class WPCLI
 					} else {
 						$plugin_version = $plugin['version'];
 					}
+					\WP_CLI::line(sprintf('Adding plugin %s. Using version %s',$plugin['name'], $plugin_version));
 					$this->composer->addPluginDependency($plugin['name'], $plugin_version);
 				}
 			}
 
 			try {
 				$success = $this->composer->saveComposer($file);
+				$saved_file = $file;
+				if (empty($saved_file)) {
+					$saved_file = $this->composer->composer_file_location;
+				}
 
 				if ($success === true) {
-					\WP_CLI::success(sprintf('Saved plugin dependencies to %s', $file));
+					\WP_CLI::success(sprintf('Saved plugin dependencies to %s', $saved_file));
 					return true;
 				}
 			} catch (\Exception $e) {
@@ -108,24 +215,14 @@ class WPCLI
 	/**
 	 * Add installed themes to composer.json
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--file]
-	 * : Path to save the composer.json file
-	 *
-	 * [--all]
-	 * : Add themes found on wordpress.org and themes not found on wordpress.org. By default only themes available on wordpress.org will be added
-	 *
-	 * [--latest]
-	 * : Add current version of theme installed or specify to always use the latest version from whatever repo the theme is coming from.
-	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
+	 *
 	 * @param array $args Positional argumenets passed to command
 	 * @param array $assoc_args Key based arguments passed to command
 	 * @return true|false True if able to write to a composer.json file, false if unable to write to the file for some reason
 	 */
-	public function addThemes($args, $assoc_args)
+	private function addThemes($args, $assoc_args)
 	{
 		$file = '';
 		$all = false;
@@ -155,6 +252,7 @@ class WPCLI
 						} else {
 							$theme_version = $theme['version'];
 						}
+						\WP_CLI::line(sprintf('Adding theme %s. Using version %s',$theme['name'], $theme_version));
 						$this->composer->addThemeDependency($theme['name'], $theme_version);
 					}
 				} else {
@@ -163,15 +261,20 @@ class WPCLI
 					} else {
 						$theme_version = $theme['version'];
 					}
+					\WP_CLI::line(sprintf('Adding theme %s. Using version %s',$theme['name'], $theme_version));
 					$this->composer->addThemeDependency($theme['name'], $theme_version);
 				}
 			}
 
 			try {
 				$success = $this->composer->saveComposer($file);
+				$saved_file = $file;
+				if (empty($saved_file)) {
+					$saved_file = $this->composer->composer_file_location;
+				}
 
 				if ($success === true) {
-					\WP_CLI::success(sprintf('Saved theme dependencies to %s', $file));
+					\WP_CLI::success(sprintf('Saved theme dependencies to %s', $saved_file));
 					return true;
 				}
 			} catch (\Exception $e) {
@@ -179,31 +282,5 @@ class WPCLI
 				return false;
 			}
 		}
-	}
-
-	/**
-	 * Add installed plugins and themes to composer.json
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--file]
-	 * : Path to save the composer.json file
-	 *
-	 * [--all]
-	 * : Add themes and plugins found on wordpress.org and themes and plugins not found on wordpress.org. By default only themes and plugins available on wordpress.org will be added
-	 *
-	 * [--latest]
-	 * : Add current version of theme or plugin installed or specify to always use the latest version from whatever repo the theme or plugn is coming from.
-	 *
-	 * @since 1.0.0
-	 * @version 1.0.0
-	 * @param array $args Positional argumenets passed to command
-	 * @param array $assoc_args Key based arguments passed to command
-	 * @return true|false True if able to write to a composer.json file, false if unable to write to the file for some reason
-	 */
-	public function addAllDependencies($args, array $assoc_args = array())
-	{
-		\WP_CLI::run_command(array('composer', 'plugins', 'add'), $assoc_args);
-		\WP_CLI::run_command(array('composer', 'themes', 'add'), $assoc_args);
 	}
 }

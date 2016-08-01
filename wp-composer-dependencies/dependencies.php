@@ -16,7 +16,13 @@ class Dependencies
 	 * Store the namespace for the dpendencies namespace from http://wpackagist.org/
 	 * @var array
 	 */
-	public $wpackagist_namepsace = array('plugin'=>'wpackagist-plugin', 'theme'=>'wpackagist-theme');
+	public $wp_packagist_namespace = array('plugin'=>'wpackagist-plugin', 'theme'=>'wpackagist-theme');
+
+	/**
+	 * URL to the WPackagist site
+	 * @var string
+	 */
+	public $wp_packagist_repo = 'https://wpackagist.org';
 
 	/**
 	 * Array of dependencies in the composer file.
@@ -29,6 +35,12 @@ class Dependencies
 	 * @var string
 	 */
 	public $composer_save_path;
+
+	/**
+	 * Composer file path
+	 * @var string
+	 */
+	public $composer_file_location;
 
 	/**
 	 * Execute WordPress hooks.
@@ -69,6 +81,8 @@ class Dependencies
 		if ($file_extension !== 'json') {
 			$composer_file_name = 'composer.json';
 		}
+
+		$this->composer_file_location = sprintf('%s/%s', $save_path, $composer_file_name);
 
 		try {
 			/*
@@ -156,6 +170,10 @@ class Dependencies
 		// check to see if composer.json file  exists directly above the current root (e.g. site is using the Bedrock directory structure)
 		if (!file_exists($composer_file)) {
 			$composer_file = $_SERVER['DOCUMENT_ROOT'].'/../composer.json';
+
+			if (!file_exists($composer_file)) {
+				$composer_file = getcwd().'/composer.json';
+			}
 		}
 
 		try {
@@ -168,8 +186,20 @@ class Dependencies
 				$composer_file = $get_real_path;
 			}
 
-			$dependencies = json_decode($filesystem->read($composer_file), true);
-			$this->composer_save_path = pathinfo($composer_file)['dirname'];
+			if (!$filesystem->has($composer_file)) {
+				$composer_file = $this->composer_file_location = '';
+				$this->composer_save_path = getcwd();
+				$dependencies = [
+					'name'=>'wp-composer-dependencies',
+					'description' => sprintf('Theme and plugin dependencies for the site %s', get_bloginfo('url')),
+					'repositories'=>['type'=>'composer','url'=>$this->wp_packagist_repo],
+					'require'=>[]
+				];
+			} else {
+				$dependencies = json_decode($filesystem->read($composer_file), true);
+				$this->composer_save_path = pathinfo($composer_file)['dirname'];
+			}
+
 			$this->composer_dependencies = $dependencies;
 
 			return $dependencies;
@@ -442,9 +472,9 @@ class Dependencies
 	public function addNameSpace($plugin_or_theme_name, $theme_or_plugin = 'plugin')
 	{
 		switch($theme_or_plugin) {
-			case 'plugin': $namespace = sprintf('%s/%s', $this->wpackagist_namepsace['plugin'], $plugin_or_theme_name);
+			case 'plugin': $namespace = sprintf('%s/%s', $this->wp_packagist_namespace['plugin'], $plugin_or_theme_name);
 				break;
-			case 'theme': $namespace = sprintf('%s/%s', $this->wpackagist_namepsace['theme'], $plugin_or_theme_name);
+			case 'theme': $namespace = sprintf('%s/%s', $this->wp_packagist_namespace['theme'], $plugin_or_theme_name);
 				break;
 			default: $namespace = false;
 		}
@@ -519,6 +549,7 @@ class Dependencies
 
 		return $path;
 	}
+
 
 	public function expandLeaveLinks($path, $cwd = null)
 	{
