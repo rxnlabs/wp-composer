@@ -14,12 +14,20 @@ class Dependencies
 {
 	/**
 	 * Store the namespace for the dpendencies namespace from http://wpackagist.org/
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @var array
 	 */
 	public $wp_packagist_namespace = array('plugin'=>'wpackagist-plugin', 'theme'=>'wpackagist-theme');
 
 	/**
 	 * Secure URL to the WPackagist site
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @var string
 	 */
 	public $wp_packagist_repo = 'https://wpackagist.org';
@@ -27,33 +35,66 @@ class Dependencies
 	/**
 	 * Unsecure URL to the WPackagist site. Composer repositories should ideally use HTTPS since by default composer is
 	 * configured to allow download assets from HTTPS repository.
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @var string
 	 */
 	public $wp_packagist_repo_non_https = 'http://wpackagist.org';
 
 	/**
 	 * Array of dependencies in the composer file.
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @var string
 	 */
 	public $composer_dependencies;
 
 	/**
 	 * Path to save the composer.json file
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @var string
 	 */
 	public $composer_save_path;
 
 	/**
 	 * Composer file path
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @var string
 	 */
 	public $composer_file_location;
+
+	/**
+	 * WordPress assets install path
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @var string
+	 */
+	public $assets_install_path;
+
+	public function __construct() {
+		// set the default installer path for the wordpress assets (we can guess that this plugin is two directories below the wp-content folder or the folder that replaced wp-content)
+		$this->setInstallerPath( basename(dirname(plugin_dir_path(__DIR__), 2)) );
+	}
 
 	/**
 	 * Execute WordPress hooks.
 	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
+	 *
+	 * @return void
 	 */
 	public function hooks()
 	{
@@ -105,36 +146,48 @@ class Dependencies
 			return false;
 		}
 
-		if (empty($this->composer_dependencies)) {
-
-		}
-
 		if (!empty($this->composer_dependencies)) {
-			$plugins = array();
-			$themes = array();
+			$wp_asset = array();
 			$other = array();
 			$composer_dependencies = array();
 
-			if (isset($this->composer_dependencies['require']['plugins']) && is_array($this->composer_dependencies['require']['plugins'])) {
-				foreach ($this->composer_dependencies['require']['plugins'] as $plugin => $version) {
-					$plugin_namespace = $this->addNameSpace($plugin, 'plugin');
-					$plugins[$plugin_namespace] = $version;
+			$requires = array('require', 'require-dev');
+			$wordpress_types_of_deps = array('plugins', 'themes');
+
+			foreach ($requires as $type_of_require) {
+
+				if (!empty($this->composer_dependencies[$type_of_require])) {
+					foreach ( $wordpress_types_of_deps as $dep ) {
+
+						if ( empty( $this->composer_dependencies[ $type_of_require ][ $dep ] ) ) {
+							continue;
+							unset( $this->composer_dependencies[ $type_of_require ][ $dep ] );
+						} elseif ( isset( $this->composer_dependencies[ $type_of_require ][ $dep ] ) && is_array( $this->composer_dependencies[ $type_of_require ][ $dep ] ) ) {
+							foreach ( $this->composer_dependencies[ $type_of_require ][ $dep ] as $plugin_or_theme => $version ) {
+								switch ( $dep ) {
+									case 'plugins':
+										$type = 'plugin';
+										break;
+									case 'themes':
+										$type = 'theme';
+										break;
+									default:
+										$type = 'plugin';
+								}
+								$plugin_or_theme_namespace = $this->addNameSpace( $plugin_or_theme, $type );
+								$wp_asset[ $plugin_or_theme_namespace ] = $version;
+							}
+							$composer_dependencies = array_merge( $composer_dependencies, $wp_asset );
+							unset( $this->composer_dependencies[ $type_of_require ][ $dep ] );
+						}
+					}
+
+					$this->composer_dependencies[ $type_of_require ] = array_merge( $this->composer_dependencies[ $type_of_require ], $composer_dependencies );
+
+				} else {
+					unset($this->composer_dependencies[ $type_of_require ]);
 				}
-				$composer_dependencies = array_merge($composer_dependencies, $plugins);
 			}
-
-			unset($this->composer_dependencies['require']['plugins']);
-
-			if (isset($this->composer_dependencies['require']['themes']) && is_array($this->composer_dependencies['require']['themes'])) {
-				foreach ($this->composer_dependencies['require']['themes'] as $theme => $version) {
-					$theme_namespace = $this->addNameSpace($theme, 'theme');
-					$themes[$theme_namespace] = $version;
-				}
-				$composer_dependencies = array_merge($composer_dependencies, $themes);
-			}
-
-			unset($this->composer_dependencies['require']['themes']);
-			$this->composer_dependencies['require'] = array_merge($this->composer_dependencies['require'], $composer_dependencies);
 
 			$json_pretty = new \Camspiers\JsonPretty\JsonPretty;
 			$composer_dependencies = stripslashes($json_pretty->prettify($this->composer_dependencies));
@@ -170,21 +223,35 @@ class Dependencies
 		$adapter = new Local('/');
 		$filesystem = new Filesystem($adapter);
 
+		// if a specific composer.json file wasn't passed in as parameter, check the current directory for a
 		if (empty($composer_file)) {
-			$composer_file = $_SERVER['DOCUMENT_ROOT']. '/composer.json';
+			$composer_file = getcwd().'/composer.json';
 		}
 
-		// check to see if composer.json file  exists directly above the current root (e.g. site is using the Bedrock directory structure)
-		if (!file_exists($composer_file)) {
-			$composer_file = $_SERVER['DOCUMENT_ROOT'].'/../composer.json';
-
-			if (!file_exists($composer_file)) {
-				$composer_file = getcwd().'/composer.json';
-			}
-		}
-
-		$add_packagist_repo = function($dependencies){
+		$add_packagist_repo = function(array $dependencies){
 			$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+			return $dependencies;
+		};
+
+		$add_installer_paths = function(array $dependencies) {
+			$wordpress_path = $this->getInstallerPath();
+			$theme_path = $wordpress_path.'/themes/{$name}';
+			$plugin_path = $wordpress_path.'/plugins/{$name}';
+			$mu_plugin_path = $wordpress_path.'/mu-plugins/{$name}';
+
+			$wordpress_install_paths = [
+				$theme_path => ["type:wordpress-theme"],
+				$plugin_path => ["type:wordpress-plugin"],
+				$mu_plugin_path => ["type:wordpress-muplugin"]
+			];
+
+			if (isset($dependencies['extra']['installer-paths'])) {
+				$installer_path = $dependencies['extra']['installer-paths'];
+			} else {
+				$installer_path = $dependencies['extra']['installer-paths'] = array();
+			}
+
+			$dependencies['extra']['installer-paths'] = array_merge( $installer_path, $wordpress_install_paths);
 			return $dependencies;
 		};
 
@@ -204,10 +271,10 @@ class Dependencies
 				$dependencies = [
 					'name'=>'wp-composer-dependencies',
 					'description' => sprintf('Theme and plugin dependencies for the site %s', get_bloginfo('url')),
-					'repositories'=>[['type'=>'composer','url'=>$this->wp_packagist_repo]],
-					'require'=>[]
+					'require'=>[],
+					'require-dev'=>[]
 				];
-				$dependencies = $add_packagist_repo($dependencies);
+				$dependencies = $add_installer_paths($add_packagist_repo($dependencies));
 			} else {
 				$dependencies = json_decode($filesystem->read($composer_file), true);
 
@@ -227,20 +294,38 @@ class Dependencies
 					}
 
 					if ($repo_added_already === false) {
-						$dependencies = $add_packagist_repo($dependencies);
+						$dependencies = $add_installer_paths($add_packagist_repo($dependencies));
 					}
 				} else {
-					$dependencies = $add_packagist_repo($dependencies);
+					$dependencies = $add_installer_paths($add_packagist_repo($dependencies));
 				}
 
 				$this->composer_save_path = pathinfo($composer_file)['dirname'];
 			}
 
 			$this->composer_dependencies = $dependencies;
+			$this->composer_file_location = sprintf('%s/%s', $this->composer_save_path, 'composer.json');
 
 			return $dependencies;
 		} catch (Exception $e) {
 			return new WP_Error(sprintf('composer.json file does not exist at the path %s', $composer_file));
+		}
+	}
+
+	/**
+	 * Read composer dependencies and extract the ones that WordPress plugins and themes into array
+	 *
+	 * Since wpackagist plugins and themes need to have the package namespaced in a defined format, we need to extract WordPress plugins and themes into their own array
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $dependencies Composer dependencies (i.e. either the "require" key or the "require-dev" key of the composer file)
+	 */
+	private function formatComposerDependencies(array $dependencies)
+	{
+		foreach($dependencies as $dep) {
+			$is_wordpress_dependency = false;
 		}
 	}
 
@@ -379,6 +464,20 @@ class Dependencies
 	}
 
 	/**
+	 * Add the WordPress plugin as a dev dependency
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param string $plugin_name Name of the plugin to add as a dependency (e.g. slug, folder name)
+	 * @param string $version The plugin version number
+	 */
+	public function addDevPluginDependency($plugin_name, $version = '*')
+	{
+		$this->composer_dependencies['require-dev']['plugins'][$plugin_name] = $version;
+	}
+
+	/**
 	 * Remove the WordPress plugin as a dependency
 	 *
 	 * @since 1.0.0
@@ -388,7 +487,22 @@ class Dependencies
 	 */
 	public function removePluginDependency($plugin_name)
 	{
-		unset($this->composer_dependencies['require']['plugins'][$plugin_name]);
+		$namespaced_plugin_name = $this->addNameSpace( $plugin_name, 'plugin' );
+		unset($this->composer_dependencies['require'][$namespaced_plugin_name]);
+	}
+
+	/**
+	 * Remove the WordPress plugin as a dev dependency
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param string $plugin_name Name of the plugin to remove as a dependency (e.g. slug, folder name)
+	 */
+	public function removeDevPluginDependency($plugin_name)
+	{
+		$namespaced_plugin_name = $this->addNameSpace( $plugin_name, 'plugin' );
+		unset($this->composer_dependencies['require-dev'][$namespaced_plugin_name]);
 	}
 
 	/**
@@ -397,11 +511,24 @@ class Dependencies
 	 * @since 1.0.0
 	 * @version 1.0.0
 	 *
-	 * string $theme_name Name of the theme to add as a dependency (e.g. slug, folder name)
+	 * @param string $theme_name Name of the theme to add as a dependency (e.g. slug, folder name)
 	 */
 	public function addThemeDependency($theme_name, $version =  "*")
 	{
 		$this->composer_dependencies['require']['themes'][$theme_name] = $version;
+	}
+
+	/**
+	 * Add specified theme as a dev dependency
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param string $theme_name Name of the theme to add as a dependency (e.g. slug, folder name)
+	 */
+	public function addDevThemeDependency($theme_name, $version =  "*")
+	{
+		$this->composer_dependencies['require-dev']['themes'][$theme_name] = $version;
 	}
 
 	/**
@@ -414,7 +541,26 @@ class Dependencies
 	 */
 	public function removeThemeDependency($theme_name)
 	{
-		unset($this->composer_dependencies['require']['themes'][$theme_name]);
+		$namespaced_theme_name = $this->addNameSpace( $theme_name, 'theme' );
+		unset($this->composer_dependencies['require'][$namespaced_theme_name]);
+
+		return $this->composer_dependencies;
+	}
+
+	/**
+	 * Remove the WordPress theme  as a dev dependency
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param string $theme_name Name of the theme  to remove as a dependency
+	 */
+	public function removeDevThemeDependency($theme_name)
+	{
+		$namespaced_theme_name = $this->addNameSpace( $theme_name, 'theme' );
+		unset($this->composer_dependencies['require-dev'][$namespaced_theme_name]);
+
+		return $this->composer_dependencies;
 	}
 
 	/**
@@ -499,11 +645,11 @@ class Dependencies
 	}
 
 	/**
-	 * Add the plugin wpackagist namespace to the plugin
+	 * Add the plugin and theme wpackagist namespace to the plugin and theme name
 	 *
-	 * @param $plugin_or_theme_name
-	 * @param string $theme_or_plugin
-	 * @return string
+	 * @param string $plugin_or_theme_name tTeme or plugin slug name/folder
+	 * @param string $theme_or_plugin Is this a plugin or theme. Valid values are "plugin", and  "theme"
+	 * @return string Plugin with wpackagist namespace or theme with wpackagist namespace
 	 */
 	public function addNameSpace($plugin_or_theme_name, $theme_or_plugin = 'plugin')
 	{
@@ -512,12 +658,84 @@ class Dependencies
 				break;
 			case 'theme': $namespace = sprintf('%s/%s', $this->wp_packagist_namespace['theme'], $plugin_or_theme_name);
 				break;
-			default: $namespace = false;
+			default: $namespace = $plugin_or_theme_name;
 		}
 
 		return $namespace;
 	}
 
+	/**
+	 * Remove the plugin and theme wpackagist namespace from the plugin and theme name
+	 *
+	 * @param string $plugin_or_theme_name Theme or plugin slug name/folder
+	 * @param string $theme_or_plugin Is this a plugin or theme. Valid values are "plugin", and  "theme"
+	 *
+	 * @return string Theme or plugin name without the wpackagist namespace
+	 */
+	public function removeNamespace($plugin_or_theme_name, $theme_or_plugin = 'plugin')
+	{
+		$count_limit = 1;
+		switch($theme_or_plugin) {
+			case 'plugin': $namespace = str_replace($this->wp_packagist_namespace['plugin'].'/', '', $plugin_or_theme_name, $count_limit);
+				break;
+			case 'theme': $namespace = str_replace( $this->wp_packagist_namespace['theme'].'/', '', $plugin_or_theme_name, $count_limit);
+				break;
+			default: $namespace = $plugin_or_theme_name;
+		}
+		return $namespace;
+	}
+
+	/**
+	 * Check if a package listed in composer.json is a WordPress theme or plugin
+	 *
+	 * @param string $plugin_or_theme_name Theme or plugin slug name/folder
+	 *
+	 * @return bool True if package is a WordPress plugin or theme. False, if not.
+	 */
+	public function isWordPressPackage($plugin_or_theme_name)
+	{
+		foreach ($this->wp_packagist_namespace as $asset) {
+			if (strpos($plugin_or_theme_name, $asset) !== false) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if a package listed in composer.json is a WordPress plugin based on it's key
+	 *
+	 * @param string $plugin_slug Plugin slug name/folder
+	 *
+	 * @return bool True if package is a WordPress plugin. False, if not.
+	 */
+	public function isWordPressPlugin($plugin_slug)
+	{
+		//var_dump( $plugin_slug);
+		if (strpos($plugin_slug, $this->wp_packagist_namespace['plugin']) !== false) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if a package listed in composer.json is a WordPress theme based on it's key
+	 *
+	 * @param string $theme_slug Theme slug name/folder
+	 *
+	 * @return bool True if package is a WordPress theme. False, if not.
+	 */
+	public function isWordPressTheme($theme_slug)
+	{
+		if (strpos($theme_slug, $this->wp_packagist_namespace['theme']) !== false) {
+			return true;
+		}
+
+		return false;
+	}
 
 	/**
 	 * Convert an absolute path to a relative path.
@@ -630,5 +848,28 @@ class Dependencies
 	 */
 	static function pathize($path) {
 		return rtrim(str_replace('\\', '/', $path), '/').'/';
+	}
+
+	/**
+	 * Set the path to install WordPress plugins and themes into
+	 *
+	 * Not all WordPress websites use the default WordPress directory structure. Some sites don't use wp-content to store their assets (e.g. Bedrock, https://github.com/roots/bedrock), some use subdirectories for their wordpress installs but manage composer assets in an ancestor directory. Allow thiose sites to set their own path to install their WordPress assets.
+	 * @param string $path Path to install the composer packages
+	 *
+	 * @return void
+	 */
+	public function setInstallerPath($path)
+	{
+		$this->assets_install_path = $path;
+	}
+
+	/**
+	 * Get the path to install WordPress plugins and themes into
+	 *
+	 * @see \rxnlabs\Dependencies\setInstallPath For why we need this
+	 */
+	public function getInstallerPath()
+	{
+		return $this->assets_install_path;
 	}
 }
