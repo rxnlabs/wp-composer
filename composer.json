@@ -25,6 +25,7 @@
         "mockery/mockery": "^0.9.4",
         "10up/wp_mock": "dev-master"
 	},
+	"minimum-stability": "dev",
 	"autoload": {
 		"classmap": [
 			"wp-composer-dependencies"
