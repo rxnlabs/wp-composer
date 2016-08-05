@@ -11,8 +11,9 @@ License: A "Slug" license name e.g. GPL2
 require __DIR__.'/vendor/autoload.php';
 
 $composer_dependencies = new \rxnlabs\Dependencies();
-$composer_dependencies->hooks();
 if (defined('WP_CLI') && WP_CLI) {
 	$composer_dependencies_wp_cli = new \rxnlabs\WPCLI($composer_dependencies);
 	$composer_dependencies_wp_cli->registerCommands();
+} else {
+	$composer_dependencies->hooks();
 }

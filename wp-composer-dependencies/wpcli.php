@@ -27,11 +27,21 @@ class WPCLI
 	 */
 	public function registerCommands()
 	{
-		\WP_CLI::add_command('composer plugins', array($this,'plugins'));
-		\WP_CLI::add_command('composer themes', array($this,'themes'));
-		\WP_CLI::add_command('composer add', array($this,'addAllDependencies'));
-		\WP_CLI::add_command('composer plugin', array($this,'plugin'));
-		\WP_CLI::add_command('composer theme', array($this,'theme'));
+		\WP_CLI::add_command('composer plugins', array($this,'plugins'), [
+			'after_wp_config_load' => $this->setInstallerPath()
+		]);
+		\WP_CLI::add_command('composer themes', array($this,'themes'), [
+			'after_wp_config_load' =>$this->setInstallerPath()
+		]);
+		\WP_CLI::add_command('composer add', array($this,'addAllDependencies'), [
+			'after_wp_config_load' => $this->setInstallerPath()
+		]);
+		\WP_CLI::add_command('composer plugin', array($this,'plugin'), [
+				'after_wp_config_load' => $this->setInstallerPath()
+		]);
+		\WP_CLI::add_command('composer theme', array($this,'theme'), [
+				'after_wp_config_load' => $this->setInstallerPath()
+		]);
 	}
 
 	/**
@@ -443,7 +453,7 @@ class WPCLI
 
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		ob_start();
-		$installed_themes = \WP_CLI::run_command(array('theme', 'list'), array('format'=>'json'));
+		\WP_CLI::run_command(array('theme', 'list'), array('format'=>'json'));
 		$themes_found = json_decode(ob_get_clean(), true);
 		$themes_added = array();
 
@@ -976,4 +986,16 @@ class WPCLI
 
 		}
 	}
+
+	/**
+	 * Set the WordPress plugin and theme installer paths
+	 */
+	private function setInstallerPath()
+	{
+		ob_start();
+		\WP_CLI::run_command(array('plugin', 'path'));
+		$installer_path = basename(dirname(ob_get_clean()), 2);
+		$this->composer->setInstallerPath($installer_path);
+	}
+
 }

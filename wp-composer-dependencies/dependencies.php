@@ -83,9 +83,17 @@ class Dependencies
 	 */
 	public $assets_install_path;
 
-	public function __construct() {
+	/**
+	 * Dependencies constructor.
+	 * @param string $installer_path Set the default installer path for the WordPress plugins
+	 */
+	public function __construct(string $installer_path = '') {
 		// set the default installer path for the wordpress assets (we can guess that this plugin is two directories below the wp-content folder or the folder that replaced wp-content)
-		$this->setInstallerPath( basename(dirname(plugin_dir_path(__DIR__), 2)) );
+		if (empty($installer_path) && function_exists('plugin_dir_path')) {
+			$installer_path = basename(dirname(plugin_dir_path(__DIR__), 2));
+		}
+
+		$this->setInstallerPath($installer_path);
 	}
 
 	/**
@@ -712,7 +720,6 @@ class Dependencies
 	 */
 	public function isWordPressPlugin($plugin_slug)
 	{
-		//var_dump( $plugin_slug);
 		if (strpos($plugin_slug, $this->wp_packagist_namespace['plugin']) !== false) {
 
 			return true;
@@ -854,12 +861,16 @@ class Dependencies
 	 * Set the path to install WordPress plugins and themes into
 	 *
 	 * Not all WordPress websites use the default WordPress directory structure. Some sites don't use wp-content to store their assets (e.g. Bedrock, https://github.com/roots/bedrock), some use subdirectories for their wordpress installs but manage composer assets in an ancestor directory. Allow thiose sites to set their own path to install their WordPress assets.
-	 * @param string $path Path to install the composer packages
+	 * @param string $path Path to install the WordPres composer packages (i.e. themes and plugins)
 	 *
 	 * @return void
 	 */
-	public function setInstallerPath($path)
+	public function setInstallerPath($path = 'wp-content')
 	{
+		if (empty($path)) {
+			$path = 'wp-content';
+		}
+
 		$this->assets_install_path = $path;
 	}
 
