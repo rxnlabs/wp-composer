@@ -14,6 +14,7 @@ $composer_dependencies = new \rxnlabs\Dependencies();
 if (defined('WP_CLI') && WP_CLI) {
 	$composer_dependencies_wp_cli = new \rxnlabs\WPCLI($composer_dependencies);
 	$composer_dependencies_wp_cli->registerCommands();
+	$composer_dependencies_wp_cli->hooks();
 } else {
 	$composer_dependencies->hooks();
 }

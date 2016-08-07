@@ -157,16 +157,14 @@ class Dependencies
 		if (!empty($this->composer_dependencies)) {
 			$wp_asset = array();
 			$other = array();
-			$composer_dependencies = array();
 
 			$requires = array('require', 'require-dev');
 			$wordpress_types_of_deps = array('plugins', 'themes');
-
+			// loop through composer array and convert each type of dependency to the kind stored in composer.json file
 			foreach ($requires as $type_of_require) {
-
 				if (!empty($this->composer_dependencies[$type_of_require])) {
+					$composer_dependencies = array();
 					foreach ( $wordpress_types_of_deps as $dep ) {
-
 						if ( empty( $this->composer_dependencies[ $type_of_require ][ $dep ] ) ) {
 							continue;
 							unset( $this->composer_dependencies[ $type_of_require ][ $dep ] );
@@ -212,6 +210,7 @@ class Dependencies
 			return $is_success;
 		}
 
+
 	}
 
 	/**
@@ -237,7 +236,17 @@ class Dependencies
 		}
 
 		$add_packagist_repo = function(array $dependencies){
-			$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+			if (isset($dependencies['repositories'])) {
+				$is_object_repo = key($dependencies['repositories']);
+				if ($is_object_repo !== 0) {
+					$dependencies['repositories']['wp-composer'] = ['type'=>'composer','url'=>$this->wp_packagist_repo];
+				} else {
+					$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+				}
+			} else {
+				$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+			}
+
 			return $dependencies;
 		};
 
@@ -289,15 +298,29 @@ class Dependencies
 				if (isset($dependencies['repositories'])) {
 					$repo_added_already = false;
 					foreach ($dependencies['repositories'] as &$repo) {
-						if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
-							$repo['url'] = $this->wp_packagist_repo;
-							$repo_added_already = true;
-							break;
-						}
+						$is_object_repo = key($dependencies['repositories']);
+						if ($is_object_repo !== 0) {
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
+								$repo['url'] = $this->wp_packagist_repo;
+								$repo_added_already = true;
+								break;
+							}
 
-						if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
-							$repo_added_already = true;
-							break;
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
+								$repo_added_already = true;
+								break;
+							}
+						} else {
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
+								$repo['url'] = $this->wp_packagist_repo;
+								$repo_added_already = true;
+								break;
+							}
+
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
+								$repo_added_already = true;
+								break;
+							}
 						}
 					}
 
