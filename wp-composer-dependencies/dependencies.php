@@ -381,7 +381,7 @@ class Dependencies
 				if (!is_wp_error($plugin_info) && wp_remote_retrieve_response_code($plugin_info) === 200) {
 					$response = json_decode( wp_remote_retrieve_body( $plugin_info ) );
 					if (empty($response)) {
-						return;
+						return false;
 					} else {
 						return true;
 					}
@@ -389,7 +389,7 @@ class Dependencies
 			}
 		}
 
-		return;
+		return false;
 	}
 
 	/**
@@ -400,6 +400,8 @@ class Dependencies
 	 *
 	 * @param string $theme_slug WordPress theme slug
 	 * @param string $repo_hosting_service The hosting service where the theme can be downloaded from (e.g. WordPress.org)
+	 *
+	 * @return bool True if the theme is available, false if not available
 	 */
 	public function isThemeAvailable($theme_slug, $repo_hosting_service = 'wordpress')
 	{
@@ -425,7 +427,7 @@ class Dependencies
 			if (!is_wp_error($theme_info) && wp_remote_retrieve_response_code($theme_info) === 200) {
 				$response = json_decode(wp_remote_retrieve_body($theme_info));
 				if (empty($response)) {
-					return;
+					return false;
 				} else {
 					return true;
 				}
@@ -433,7 +435,7 @@ class Dependencies
 			}
 		}
 
-		return;
+		return false;
 	}
 
 	/**

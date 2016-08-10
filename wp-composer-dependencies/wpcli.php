@@ -4,7 +4,6 @@
  */
 namespace rxnlabs;
 use \rxnlabs\Dependencies as Dependencies;
-
 class WPCLI
 {
 
@@ -16,6 +15,7 @@ class WPCLI
 	 */
 	public function __construct(\rxnlabs\Dependencies $composer)
 	{
+		// Run the Composer command.
 		$this->composer = $composer;
 	}
 
@@ -27,21 +27,22 @@ class WPCLI
 	 */
 	public function registerCommands()
 	{
-		\WP_CLI::add_command('composer plugins', array($this,'plugins'), [
+		\WP_CLI::add_command('composer plugins', array($this, 'plugins'), [
 			'after_wp_config_load' => $this->setInstallerPath()
 		]);
-		\WP_CLI::add_command('composer themes', array($this,'themes'), [
+		\WP_CLI::add_command('composer themes', array($this, 'themes'), [
 			'after_wp_config_load' => $this->setInstallerPath()
 		]);
-		\WP_CLI::add_command('composer add', array($this,'addAllDependencies'), [
+		\WP_CLI::add_command('composer add', array($this, 'addAllDependencies'), [
 			'after_wp_config_load' => $this->setInstallerPath()
 		]);
-		\WP_CLI::add_command('composer plugin', array($this,'plugin'), [
-				'after_wp_config_load' => $this->setInstallerPath()
+		\WP_CLI::add_command('composer plugin', array($this, 'plugin'), [
+			'after_wp_config_load' => $this->setInstallerPath()
 		]);
-		\WP_CLI::add_command('composer theme', array($this,'theme'), [
-				'after_wp_config_load' => $this->setInstallerPath()
+		\WP_CLI::add_command('composer theme', array($this, 'theme'), [
+			'after_wp_config_load' => $this->setInstallerPath()
 		]);
+		\WP_CLI::add_command('composer install', array($this, 'installDependencies'));
 	}
 
 	/**
@@ -51,12 +52,11 @@ class WPCLI
 	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
-	 * 
+	 *
 	 * @return void
 	 */
 	public function hooks()
 	{
-
 		\WP_CLI::add_hook('after_invoke:plugin install', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
 			$this->addPlugin($plugins_or_themes_slug, $args, $assoc_args);
@@ -113,14 +113,16 @@ class WPCLI
 	}
 
 	/**
-	 * Perform actions on installed plugins.
+	 * Perform commands on installed plugins.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <action>
-	 * : The action to perform. Available actions are:
-	 * - "add" action will add installed plugins to composer.json
-	 * - "remove" action will remove plugins from composer.json
+	 * <command>
+	 * : The command to perform. Available commands are:
+	 * - "add" command will add installed plugins to composer.json
+	 * - "install" command will install listed in composer.json
+	 * - "deactivate" command will deactivate plugins listed in composer.json
+	 * - "uninstall" command will deactivate, uninstall, and remove the plugins from composer.json
 	 *
 	 * [--file]
 	 * : Path to save the composer.json file
@@ -139,6 +141,9 @@ class WPCLI
 	 *
 	 * [--dev]
 	 * : Only apply command to plugins defined as a dev requirement (only works with "uninstall" command at this moment)
+	 *
+	 * [--deactivate]
+	 * : Deactivate the plugins before uninstalling them (this only applies to the deactivate command)
 	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
@@ -170,22 +175,30 @@ class WPCLI
 				case "uninstall":
 					$this->uninstallPlugins($args, $assoc_args);
 					break;
+				case "activate":
+					$this->activatePlugins($args, $assoc_args);
+					break;
+				case "deactivate":
+					$this->deactivatePlugins($args, $assoc_args);
+					break;
 				default:
-					$message = sprintf('%s is not a valid action', $args[0]);
-					\WP_CLI::warning($message);
+					$message = sprintf('%s is not a valid command', $args[0]);
+					\WP_CLI::error($message);
 			}
 		}
 	}
 
 	/**
-	 * Perform actions on installed themes.
+	 * Perform commands on installed themes.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <action>
-	 * : The action to perform. Available actions are:
-	 * - "add" action will add installed themes to composer.json
-	 * - "remove" action will remove themes from composer.json
+	 * <command>
+	 * : The command to perform. Available commands are:
+	 * - "add" command will add installed themes to composer.json
+	 * - "install" command will install themes listed in the composer.json
+	 * - "deactivate" command will deactivate themes listed in composer.json
+	 * - "uninstall" command will uninstall and remove themes listed in the composer.json file
 	 *
 	 * [--file]
 	 * : Path to save the composer.json file
@@ -235,20 +248,26 @@ class WPCLI
 				case "uninstall":
 					$this->uninstallThemes( $args, $assoc_args );
 					break;
+				case "activate":
+					$this->activateThemes( $args, $assoc_args );
+					break;
+				case "deactivate":
+					$this->deactivateThemes( $args, $assoc_args );
+					break;
 				default:
-					$message = sprintf('%s is not a valid action', $args[0]);
-					\WP_CLI::warning($message);
+					$message = sprintf('%s is not a valid command', $args[0]);
+					\WP_CLI::error($message);
 			}
 		}
 	}
 
 	/**
-	 * Perform actions on a particular plugin by specifying the plugin slug.
+	 * Perform commands on a particular plugin by specifying the plugin slug.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <action>
-	 * : The action to perform. Available actions are:
+	 * <command>
+	 * : The command to perform. Available commands are:
 	 * - "add" will add the specified plugin slug to the composer.json file
 	 * - "remove" will remove the specified plugin from the composer.json file
 	 *
@@ -262,7 +281,7 @@ class WPCLI
 	 * : Add current version of plugin installed or specify to always use the latest version from whatever repo the plugin is coming from.
 	 *
 	 * [--version]
-	 * : Use the specified the version. This only applies when using the "add" action.
+	 * : Use the specified the version. This only applies when using the "add" command.
 	 *
 	 * [--dev]
 	 * : Add or remove the plugin as a dev dependency
@@ -272,6 +291,12 @@ class WPCLI
 	 *
 	 * [--ip]
 	 * : Set the WordPress plugins and themes installer path (shorter alias for "installer-paths")
+	 *
+	 * [--no-verify]
+	 * : Skip verifying that a plugin is available on Wordpress.org before adding it to the composer.json file. By default, only plugins currently available on Wordpress.org will be added to composer.json
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
 	 *
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to the command
@@ -305,20 +330,20 @@ class WPCLI
 						$this->removePlugin( $plugin_slug, $args, $assoc_args );
 						break;
 					default:
-						$message = sprintf( '%s is not a valid action', $args[0] );
-						\WP_CLI::warning( $message );
+						$message = sprintf( '%s is not a valid command', $args[0] );
+						\WP_CLI::error( $message );
 				}
 			}
 		}
 	}
 
 	/**
-	 * Perform actions on a particular theme by specifying the theme slug.
+	 * Perform commands on a particular theme by specifying the theme slug.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <action>
-	 * : The action to perform. Available actions are:
+	 * <command>
+	 * : The command to perform. Available commands are:
 	 * - "add" will add the specified theme slug to the composer.json file
 	 * - "remove" will remove the specified theme from the composer.json file
 	 *
@@ -332,7 +357,7 @@ class WPCLI
 	 * : Add current version of theme installed or specify to always use the latest version from whatever repo the plugin is coming from.
 	 *
 	 * [--version]
-	 * : Use the specified the version. This only applies when using the "add" action.
+	 * : Use the specified the version. This only applies when using the "add" command.
 	 *
 	 * [--dev]
 	 * : Add or remove the theme as a dev dependency
@@ -345,6 +370,12 @@ class WPCLI
 	 *
 	 * [--activate]
 	 * : Activate the plugins defined in composer.json (only applies to the "add" command)
+	 *
+	 * [--no-verify]
+	 * : Skip verifying that a theme is available on Wordpress.org before adding it to the composer.json file. By default, only themes currently available on Wordpress.org are will be added to the composer.json file
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
 	 *
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to the command
@@ -377,8 +408,8 @@ class WPCLI
 						$this->removeTheme( $theme_slug, $args, $assoc_args );
 						break;
 					default:
-						$message = sprintf( '%s is not a valid action', $args[0] );
-						\WP_CLI::warning( $message );
+						$message = sprintf( '%s is not a valid command', $args[0] );
+						\WP_CLI::error( $message );
 				}
 			}
 		}
@@ -404,6 +435,9 @@ class WPCLI
 	 * [--ip]
 	 * : Set the WordPress plugins and themes installer path (shorter alias for "installer-paths")
 	 *
+	 * [--no-verify]
+	 * : Skip verifying that a plugin/theme is available on Wordpress.org before adding it to the composer.json file. By default, only plugins/themes currently available on Wordpress.org will be added to composer.json
+	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
 	 *
@@ -425,6 +459,35 @@ class WPCLI
 		\WP_CLI::run_command(array('composer', 'plugins', 'add'), $assoc_args);
 		\WP_CLI::run_command(array('composer', 'themes', 'add'), $assoc_args);
 	}
+
+	/**
+	 * Install the dependencies of themes and plugins
+	 *
+	 * If a theme or plugin has a composer.json, attempt to install those dependencies if they are not currently installed.
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param $args
+	 * @param $assoc_args
+	 */
+	public function installDependencies($args, $assoc_args)
+	{
+		if (isset($args[0])) {
+			switch ($args[0]) {
+				case "plugins":
+					$this->installPluginsDependencies($args, $assoc_args);
+					break;
+				case "themes":
+					$this->installThemesDependencies($args, $assoc_args);
+					break;
+				default:
+					$message = sprintf( '%s is not a valid command', $args[0] );
+					\WP_CLI::error( $message );
+			}
+		}
+	}
+
 
 	/**
 	 * Add installed plugins to composer.json.
@@ -456,6 +519,7 @@ class WPCLI
 		ob_start();
 		$installed_plugins = \WP_CLI::run_command(array('plugin', 'list'), array('format'=>'json'));
 		$plugins_found = json_decode(ob_get_clean(), true);
+		ob_end_clean();
 		$plugins_added = array();
 
 		if (!empty($composer) && is_array($plugins_found)) {
@@ -534,6 +598,7 @@ class WPCLI
 		ob_start();
 		\WP_CLI::run_command(array('theme', 'list'), array('format'=>'json'));
 		$themes_found = json_decode(ob_get_clean(), true);
+		ob_end_clean();
 		$themes_added = array();
 
 		if (!empty($composer) && is_array($themes_found)) {
@@ -584,15 +649,17 @@ class WPCLI
 	/**
 	 * Add the specified plugin to the composer.json file.
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param string|array $plugin_slug One or more plugin slug or path to download the plugin from.
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
-	 * @return bool
+	 * @return bool True if the plugin was successfully added to composer.json. False, if error writing to composer.json file
 	 */
 	private function addPlugin($plugin_slug, array $args = [], array $assoc_args = [])
 	{
-
 		if (is_string($plugin_slug)) {
 			$plugin_slug = [$plugin_slug];
 		}
@@ -601,6 +668,8 @@ class WPCLI
 			$file = '';
 			$plugin_version = '*';
 			$dev = false;
+			$verify = true;
+			$skipped = [];
 
 			if (isset($assoc_args['latest'])) {
 				$plugin_version = '*';
@@ -619,17 +688,30 @@ class WPCLI
 				$dev = true;
 			}
 
+			if (isset($args['no-verify'])) {
+				$verify = false;
+			}
+
 			$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 
 			if ( !empty( $composer ) ) {
 
 				foreach ($plugin_slug as $plugin) {
-					\WP_CLI::line(sprintf('Adding plugin %s. Using version %s', $plugin, $plugin_version));
+					if ($verify !== false) {
 
-					if ($dev) {
-						$this->composer->addDevPluginDependency($plugin, $plugin_version);
-					} else {
-						$this->composer->addPluginDependency($plugin, $plugin_version);
+						if ($this->composer->isPluginAvailable($plugin) === false) {
+							$skipped[] = $plugin;
+							unset($plugin_slug[key($plugin_slug)]);
+						}
+					}
+
+					if (!in_array($plugin, $skipped)) {
+						\WP_CLI::line(sprintf('Adding plugin %s. Using version %s', $plugin, $plugin_version));
+						if ($dev) {
+							$this->composer->addDevPluginDependency($plugin, $plugin_version);
+						} else {
+							$this->composer->addPluginDependency($plugin, $plugin_version);
+						}
 					}
 				}
 
@@ -641,14 +723,22 @@ class WPCLI
 						$saved_file = $this->composer->composer_file_location;
 					}
 
-					if ($dev) {
-						$message = sprintf( 'Saved %s plugin as a dev dependency to %s', implode(', ', $plugin_slug), $saved_file );
-					} else {
-						$message = sprintf( 'Saved %s plugin as a dependency to %s',  implode(', ', $plugin_slug), $saved_file );
+					if (isset($plugin_slug[0])) {
+						if ($dev) {
+							$message = sprintf('Saved %s plugin as a dev dependency to %s', implode(', ', $plugin_slug), $saved_file);
+						} else {
+							$message = sprintf('Saved %s plugin as a dependency to %s', implode(', ', $plugin_slug), $saved_file);
+						}
 					}
 
 					if ( $success === true ) {
-						\WP_CLI::success( $message );
+						if (isset($plugin_slug[0])) {
+							\WP_CLI::success($message);
+						}
+
+						if (isset($skipped[0])) {
+							\WP_CLI::error(sprintf('Unable to add %s as dependency to composer.json. The plugin was not found on Wordpress.org', implode(', ', $skipped)));
+						}
 
 						return true;
 					}
@@ -664,11 +754,14 @@ class WPCLI
 	/**
 	 * Add the specified theme to the composer.json file.
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param string|array $theme_slug One or more theme slugs or path to download the theme from.
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
-	 * @return bool
+	 * @return bool True if the theme was successfully added to composer.json. False, if error writing to composer.json file
 	 */
 	private function addTheme($theme_slug, array $args = [], array $assoc_args = [])
 	{
@@ -680,6 +773,8 @@ class WPCLI
 			$file = '';
 			$theme_version = '*';
 			$dev = false;
+			$verify = true;
+			$skipped = [];
 
 			if (isset($assoc_args['file'])) {
 				$file = $assoc_args['file'];
@@ -689,7 +784,7 @@ class WPCLI
 				$theme_version = '*';
 			}
 
-			// disregard the version argument if the user tries to add more than one plugin since not all plugins have the same version number
+			// disregard the version argument if the user tries to add more than one theme since not all theme have the same version number
 			if (isset($assoc_args['version']) && count($theme_slug) === 1) {
 				$theme_version = $assoc_args['version'];
 			}
@@ -698,16 +793,35 @@ class WPCLI
 				$dev = true;
 			}
 
+			if (isset($args['no-verify'])) {
+				$verify = false;
+			}
+
 			$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 
 			if ( !empty( $composer ) ) {
 
 				foreach ($theme_slug as $theme) {
-					\WP_CLI::line(sprintf('Adding theme %s. Using version %s', $theme, $theme_version));
-					if ($dev) {
-						$this->composer->addDevThemeDependency($theme, $theme_version);
-					} else {
-						$this->composer->addThemeDependency($theme, $theme_version);
+
+					if ($verify !== false) {
+
+						if ($this->composer->isThemeAvailable($theme) === false) {
+							$skipped[] = $theme;
+							unset($theme_slug[key($theme_slug)]);
+						}
+						// themes hosted on WordPress.org don't have versioning numbers that we can ping easily the same way plugins have, so always use the latest version of a theme since when we attempt to install a certain theme version using composer, an error may be thrown saying the theme version cannot be found
+						if ($theme_version !== '*') {
+							$theme_version = sprintf('^%s', $theme_version);
+						}
+					}
+
+					if (!in_array($theme, $skipped)) {
+						\WP_CLI::line(sprintf('Adding theme %s. Using version %s', $theme, $theme_version));
+						if ($dev) {
+							$this->composer->addDevThemeDependency($theme, $theme_version);
+						} else {
+							$this->composer->addThemeDependency($theme, $theme_version);
+						}
 					}
 				}
 
@@ -721,12 +835,15 @@ class WPCLI
 
 					if ( $success === true ) {
 						if ($dev) {
-							$message = sprintf( 'Saved %s theme a dev dependency to %s', implode(', ', $theme_slug), $saved_file );
+							$message = sprintf( 'Saved %s theme as a dev dependency to %s', implode(', ', $theme_slug), $saved_file );
 						} else {
-							$message = sprintf( 'Saved %s theme a dependency to %s', implode(', ', $theme_slug), $saved_file );
+							$message = sprintf( 'Saved %s theme as a dependency to %s', implode(', ', $theme_slug), $saved_file );
 						}
 
 						\WP_CLI::success( $message );
+						if (isset($skipped[0])) {
+							\WP_CLI::error(sprintf('Unable to add %s as dependency to composer.json. The theme was not found on Wordpress.org', implode(', ', $skipped)));
+						}
 
 						return true;
 					}
@@ -743,11 +860,14 @@ class WPCLI
 	/**
 	 * Remove the specified plugin from the composer.json file.
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param string|array $plugin_slug One or more plugins to remove as dependencies
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
-	 * @return bool
+	 * @return bool True if the plugin was successfully removed from composer.json. False, if error writing to composer.json file
 	 */
 	private function removePlugin($plugin_slug, array $args = [], array $assoc_args = [])
 	{
@@ -758,18 +878,26 @@ class WPCLI
 
 		if (is_array($plugin_slug)) {
 			$file = '';
-
+			$dev = false;
 			if (isset($assoc_args['file'])) {
 				$file = $assoc_args['file'];
 			}
 
+			if (isset($args['dev'])) {
+				$dev = true;
+			}
 			$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 
 			if (!empty($composer)) {
 
 				foreach ($plugin_slug as $plugin) {
-					\WP_CLI::line(sprintf('Removing plugin %s', $plugin_slug));
-					$this->composer->removePluginDependency($plugin_slug);
+					if ($dev) {
+						\WP_CLI::line(sprintf('Removing plugin %s as dev dependency', $plugin));
+						$this->composer->removeDevPluginDependency($plugin);
+					} else {
+						\WP_CLI::line(sprintf('Removing plugin %s as dependency', $plugin));
+						$this->composer->removePluginDependency($plugin);
+					}
 				}
 
 				try {
@@ -796,11 +924,14 @@ class WPCLI
 	/**
 	 * Remove the specified theme from the composer.json file.
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param string|array $theme_slug One or more theme slugs to remove as dependencies
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
-	 * @return bool
+	 * @return bool True if the theme was successfully removed from composer.json. False, if error writing to composer.json file
 	 */
 	private function removeTheme($theme_slug, array $args = [], array $assoc_args = [])
 	{
@@ -811,17 +942,26 @@ class WPCLI
 
 		if (is_array($theme_slug)) {
 			$file = '';
-
+			$dev = false;
 			if (isset($assoc_args['file'])) {
 				$file = $assoc_args['file'];
+			}
+
+			if (isset($args['dev'])) {
+				$dev = true;
 			}
 
 			$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 
 			if (!empty($composer)) {
 				foreach ($theme_slug as $theme) {
-					\WP_CLI::line(sprintf('Removing theme %s', $theme));
-					$this->composer->removeThemeDependency($theme);
+					if ($dev) {
+						\WP_CLI::line(sprintf('Removing theme %s as dev dependency', $theme));
+						$this->composer->removeDevPluginDependency($theme);
+					} else {
+						\WP_CLI::line(sprintf('Removing theme %s as dependency', $theme));
+						$this->composer->removeThemeDependency($theme);
+					}
 				}
 
 				try {
@@ -846,11 +986,175 @@ class WPCLI
 	}
 
 	/**
-	 * Bulk uninstall plugins
+	 * Bulk activate plugins in composer.json
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
 	 *
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
+	 * @return void
+	 */
+	private function activatePlugins(array $args = [], array $assoc_args = [])
+	{
+		$file = '';
+		$type_of_plugin = 'require';
+
+		if (isset($assoc_args['file'])) {
+			$file = $assoc_args['file'];
+		}
+
+		if (isset($assoc_args['dev'])) {
+			$type_of_plugin = 'require-dev';
+		}
+
+		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
+		if (isset($composer[$type_of_plugin])) {
+			$installed_plugins = array();
+			foreach ($composer[$type_of_plugin] as $plugin_name=>$version) {
+				if ($this->composer->isWordPressPlugin($plugin_name)) {
+					$plugin_slug = $this->composer->removeNamespace($plugin_name, 'plugin');
+					$installed_plugins[] = $plugin_slug;
+				}
+			}
+
+			if (!empty($installed_plugins)) {
+				\WP_CLI::run_command(array('plugin', 'activate', implode(' ', $installed_plugins)));
+			}
+		}
+	}
+
+	/**
+	 * Bulk activate themes in composer.json
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional arguments passed to the command
+	 * @param array $assoc_args Key based arguments passed to command
+	 *
+	 * @return void
+	 */
+	private function activateThemes(array $args = [], array $assoc_args = [])
+	{
+		$file = '';
+		$type_of_theme = 'require';
+
+		if (isset($assoc_args['file'])) {
+			$file = $assoc_args['file'];
+		}
+
+		if (isset($assoc_args['dev'])) {
+			$type_of_theme = 'require-dev';
+		}
+
+		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
+		if (isset($composer[$type_of_theme])) {
+			$activate_themes = array();
+			foreach ($composer[$type_of_theme] as $theme_name=>$version) {
+				if ($this->composer->isWordPressTheme($theme_name)) {
+					$theme_slug = $this->composer->removeNamespace($theme_name, 'theme');
+					$activate_themes[] = $theme_slug;
+				}
+			}
+
+			if (!empty($activate_themes)) {
+				\WP_CLI::run_command(array('plugin', 'activate', implode(' ', $activate_themes)));
+			}
+		}
+	}
+
+	/**
+	 * Bulk deactivate plugins in composer.json
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional arguments passed to the command
+	 * @param array $assoc_args Key based arguments passed to command
+	 *
+	 * @return void
+	 */
+	private function deactivatePlugins(array $args = [], array $assoc_args = [])
+	{
+		$file = '';
+		$type_of_plugin = 'require';
+
+		if (isset($assoc_args['file'])) {
+			$file = $assoc_args['file'];
+		}
+
+		if (isset($assoc_args['dev'])) {
+			$type_of_plugin = 'require-dev';
+		}
+
+		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
+		if (isset($composer[$type_of_plugin])) {
+			$deactivate_plugins = array();
+			foreach ($composer[$type_of_plugin] as $plugin_name=>$version) {
+				if ($this->composer->isWordPressPlugin($plugin_name)) {
+					$plugin_slug = $this->composer->removeNamespace($plugin_name, 'plugin');
+					$deactivate_plugins[] = $plugin_slug;
+				}
+			}
+
+			if (!empty($deactivate_plugins)) {
+				\WP_CLI::run_command(array('plugin', 'deactivate', implode(' ', $deactivate_plugins)));
+			}
+		}
+	}
+
+	/**
+	 * Bulk deactivate themes in composer.json
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional arguments passed to the command
+	 * @param array $assoc_args Key based arguments passed to command
+	 *
+	 * @return void
+	 */
+	private function deactivateThemes(array $args = [], array $assoc_args = [])
+	{
+		$file = '';
+		$type_of_theme = 'require';
+
+		if (isset($assoc_args['file'])) {
+			$file = $assoc_args['file'];
+		}
+
+		if (isset($assoc_args['dev'])) {
+			$type_of_theme = 'require-dev';
+		}
+
+		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
+		if (isset($composer[$type_of_theme])) {
+			$deactivate_themes = array();
+			foreach ($composer[$type_of_theme] as $theme_name=>$version) {
+				if ($this->composer->isWordPressTheme($theme_name)) {
+					$theme_slug = $this->composer->removeNamespace($theme_name, 'theme');
+					$deactivate_themes[] = $theme_slug;
+				}
+			}
+
+			if (!empty($deactivate_themes)) {
+				\WP_CLI::run_command(array('plugin', 'deactivate', implode(' ', $deactivate_themes)));
+			}
+		}
+	}
+
+	/**
+	 * Bulk uninstall plugins
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param array $args Positional arguments passed to the command
+	 * @param array $assoc_args Key based arguments passed to command
+	 *
+	 * @return bool True if the plugins we're uninstalled successfully and we were able to remove the plugin from composer.json. False, if error writing to composer.json file
 	 */
 	private function uninstallPlugins(array $args = [], array $assoc_args = [])
 	{
@@ -892,7 +1196,9 @@ class WPCLI
 					}
 
 					$uninstalled_plugins = implode(' ', $found_plugins);
-					\WP_CLI::run_command(array('plugin', 'deactivate', $uninstalled_plugins));
+					if (isset($assoc_args['deactivate'])) {
+						\WP_CLI::run_command(array('plugin', 'deactivate', $uninstalled_plugins));
+					}
 					\WP_CLI::run_command(array('plugin', 'uninstall', $uninstalled_plugins));
 					$uninstalled_plugins = implode(', ', $found_plugins);
 
@@ -919,9 +1225,13 @@ class WPCLI
 	/**
 	 * Bulk uninstall themes
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
+	 * @return bool True if the themes we're uninstalled successfully and we were able to remove the theme from composer.json. False, if error writing to composer.json file
 	 */
 	private function uninstallThemes(array $args = [], array $assoc_args = [])
 	{
@@ -964,6 +1274,9 @@ class WPCLI
 					}
 
 					$uninstalled_themes = implode(' ', $found_themes);
+					if (isset($assoc_args['deactivate'])) {
+						\WP_CLI::run_command(array('theme', 'deactivate', $uninstalled_themes));
+					}
 					\WP_CLI::run_command(array('theme', 'uninstall', $uninstalled_themes));
 					$uninstalled_themes = implode(', ', $found_themes);
 
@@ -991,9 +1304,13 @@ class WPCLI
 	/**
 	 * Bulk install plugins
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
+	 * @return void
 	 */
 	private function installPlugins(array $args = [], array $assoc_args = [])
 	{
@@ -1013,17 +1330,17 @@ class WPCLI
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_plugin])) {
 			$found_plugins = array();
-			foreach ($composer[$type_of_plugin] as $plugin_name=>$version) {
+			foreach ($composer[$type_of_plugin] as $plugin_name => $version) {
 				if ($this->composer->isWordPressPlugin($plugin_name)) {
 					$plugin_slug = $this->composer->removeNamespace($plugin_name, 'plugin');
 					$found_plugins[] = $plugin_slug;
 
 					// since wordpress.org doesn't label plugins by these words, these are all alias to download the latest version
-					$bad_versions_of_plugins = ['*','dev-trunk','dev-master','master','dev'];
+					$bad_versions_of_plugins = ['*', 'dev-trunk', 'dev-master', 'master', 'dev'];
 					if (in_array($version, $bad_versions_of_plugins)) {
 						\WP_CLI::run_command(array('plugin', 'install', $plugin_slug));
 					} else {
-						\WP_CLI::run_command(array('plugin', 'install', $plugin_slug), array('version'=>$version));
+						\WP_CLI::run_command(array('plugin', 'install', $plugin_slug), array('version' => $version));
 					}
 
 				}
@@ -1053,9 +1370,13 @@ class WPCLI
 	/**
 	 * Bulk install themes
 	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
 	 * @param array $args Positional arguments passed to the command
 	 * @param array $assoc_args Key based arguments passed to command
 	 *
+	 * @return void
 	 */
 	private function installThemes(array $args = [], array $assoc_args = [])
 	{
@@ -1111,14 +1432,135 @@ class WPCLI
 	}
 
 	/**
+	 * Bulk install composer dependencies for WordPress plugins
+	 *
+	 * If a plugin has a composer.json file, check if it's dependencies are already installed. If not, run "composer install" command
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @param $args Positional arguments passed to the command
+	 * @param $assoc_args Key based arguments passed to command
+	 *
+	 * @return void
+	 */
+	private function installPluginsDependencies($args, $assoc_args)
+	{
+		if (class_exists('\\Composer\\Console\\Application')) {
+			$plugin_type_folders = ['mu-plugins', 'plugins'];
+			foreach ($plugin_type_folders as $plugin_type) {
+				$plugins_path = $this->getAssetsPath() . '/'. $plugin_type;
+				$plugins = glob($plugins_path . '/*', GLOB_ONLYDIR);
+				if (!empty($plugins)) {
+					foreach ($plugins as $plugin) {
+						// don't try to install dependencies for this plugin
+						if ($plugin === dirname(dirname(__FILE__))) {
+							continue;
+						}
+
+						$composer_file = $plugin . '/composer.json';
+						if (file_exists($composer_file)) {
+							// test if the plugin already has it's dependencies installed
+							$read_composer = json_decode(file_get_contents($composer_file), true);
+							$vendor_dir = $plugin . '/vendor';
+							if (isset($read_composer['config']) && isset($read_composer['config']['vendor-dir'])) {
+								$vendor_dir = $plugin . '/' . $read_composer['config']['vendor-dir'];
+							}
+
+							if (!is_dir($vendor_dir)) {
+								$plugin_folder = basename($plugin, 1);
+								\WP_CLI::line(sprintf('Installing dependencies for %s plugin...', $plugin_folder));
+								ob_end_clean();
+								ob_flush();
+								$working_directory = sprintf('--working-dir=%s', $plugin);
+								$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
+								$composer = new \Composer\Console\Application();
+								$composer->setAutoExit(false);
+								$composer->run();
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Bulk install composer dependencies for WordPress themes
+	 *
+	 * If a plugin has a composer.json file, check if it's dependencies are already installed. If not, run "composer install" command
+	 *
+	 * @since 1.0.0
+	 * @versio 1.0.0
+	 *
+	 * @param $args Positional arguments passed to the command
+	 * @param $assoc_args Key based arguments passed to command
+	 *
+	 * @return void
+	 */
+	private function installThemesDependencies($args, $assoc_args)
+	{
+		if (class_exists('\\Composer\\Console\\Application')) {
+			$themes_path = $this->getAssetsPath() . '/themes';
+			$themes = glob($themes_path . '/*', GLOB_ONLYDIR);
+			if (!empty($themes)) {
+				foreach ($themes as $theme) {
+					$composer_file = $theme . '/composer.json';
+					if (file_exists($composer_file)) {
+						// test if the plugin already has it's dependencies installed
+						$read_composer = json_decode(file_get_contents($composer_file), true);
+						$vendor_dir = $theme.'/vendor';
+						if (isset($read_composer['config']) && isset($read_composer['config']['vendor-dir'])) {
+							$vendor_dir = $theme.'/'.$read_composer['config']['vendor-dir'];
+						}
+
+						if (!is_dir($vendor_dir)) {
+							$theme_folder = basename($theme, 1);
+							\WP_CLI::line(sprintf('Installing dependencies for %s theme...', $theme_folder));
+							ob_end_clean();
+							ob_flush();
+							$working_directory = sprintf('--working-dir=%s', $theme);
+							$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
+							$composer = new \Composer\Console\Application();
+							$composer->setAutoExit(false);
+							$composer->run();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Set the WordPress plugin and theme installer paths
+	 *
+	 * @since 1.0..0
+	 * @version 1.0.0
+	 *
+	 * @return void
 	 */
 	private function setInstallerPath()
 	{
 		ob_start();
 		\WP_CLI::run_command(array('plugin', 'path'));
-		$installer_path = basename(dirname(ob_get_clean()), 2);
+		$installer_path = basename($this->getAssetsPath(), 2);
 		$this->composer->setInstallerPath($installer_path);
 	}
 
+	/**
+	 * Get the WordPress plugins install paths
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @return string Path to the parent directory of the plugins and themes path
+	 */
+	public function getAssetsPath()
+	{
+		ob_start();
+		$path = \WP_CLI::run_command(['plugin', 'path'], [], ['quiet']);
+		$path = ob_get_clean();
+		ob_end_clean();
+		return @dirname($path);
+	}
 }
