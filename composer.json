@@ -30,7 +30,7 @@
 		"classmap": [
 			"wp-composer-dependencies"
 		],
-		"files": ["wp-composer-dependencies"]
+		"files": ["wp-composer-dependencies.php"]
 	},
 	"archive": {
 		"exclude": [
