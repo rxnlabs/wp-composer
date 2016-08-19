@@ -83,9 +83,17 @@ class Dependencies
 	 */
 	public $assets_install_path;
 
-	public function __construct() {
+	/**
+	 * Dependencies constructor.
+	 * @param string $installer_path Set the default installer path for the WordPress plugins
+	 */
+	public function __construct(string $installer_path = '') {
 		// set the default installer path for the wordpress assets (we can guess that this plugin is two directories below the wp-content folder or the folder that replaced wp-content)
-		$this->setInstallerPath( basename(dirname(plugin_dir_path(__DIR__), 2)) );
+		if (empty($installer_path) && function_exists('plugin_dir_path')) {
+			$installer_path = basename(dirname(plugin_dir_path(__DIR__), 2));
+		}
+
+		$this->setInstallerPath($installer_path);
 	}
 
 	/**
@@ -149,16 +157,14 @@ class Dependencies
 		if (!empty($this->composer_dependencies)) {
 			$wp_asset = array();
 			$other = array();
-			$composer_dependencies = array();
 
 			$requires = array('require', 'require-dev');
 			$wordpress_types_of_deps = array('plugins', 'themes');
-
+			// loop through composer array and convert each type of dependency to the kind stored in composer.json file
 			foreach ($requires as $type_of_require) {
-
 				if (!empty($this->composer_dependencies[$type_of_require])) {
+					$composer_dependencies = array();
 					foreach ( $wordpress_types_of_deps as $dep ) {
-
 						if ( empty( $this->composer_dependencies[ $type_of_require ][ $dep ] ) ) {
 							continue;
 							unset( $this->composer_dependencies[ $type_of_require ][ $dep ] );
@@ -204,6 +210,7 @@ class Dependencies
 			return $is_success;
 		}
 
+
 	}
 
 	/**
@@ -229,7 +236,17 @@ class Dependencies
 		}
 
 		$add_packagist_repo = function(array $dependencies){
-			$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+			if (isset($dependencies['repositories'])) {
+				$is_object_repo = key($dependencies['repositories']);
+				if ($is_object_repo !== 0) {
+					$dependencies['repositories']['wp-composer'] = ['type'=>'composer','url'=>$this->wp_packagist_repo];
+				} else {
+					$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+				}
+			} else {
+				$dependencies['repositories'] = [['type'=>'composer','url'=>$this->wp_packagist_repo]];
+			}
+
 			return $dependencies;
 		};
 
@@ -281,15 +298,29 @@ class Dependencies
 				if (isset($dependencies['repositories'])) {
 					$repo_added_already = false;
 					foreach ($dependencies['repositories'] as &$repo) {
-						if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
-							$repo['url'] = $this->wp_packagist_repo;
-							$repo_added_already = true;
-							break;
-						}
+						$is_object_repo = key($dependencies['repositories']);
+						if ($is_object_repo !== 0) {
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
+								$repo['url'] = $this->wp_packagist_repo;
+								$repo_added_already = true;
+								break;
+							}
 
-						if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
-							$repo_added_already = true;
-							break;
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
+								$repo_added_already = true;
+								break;
+							}
+						} else {
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo_non_https) {
+								$repo['url'] = $this->wp_packagist_repo;
+								$repo_added_already = true;
+								break;
+							}
+
+							if ($repo['type'] === 'composer' && $repo['url'] === $this->wp_packagist_repo) {
+								$repo_added_already = true;
+								break;
+							}
 						}
 					}
 
@@ -350,7 +381,7 @@ class Dependencies
 				if (!is_wp_error($plugin_info) && wp_remote_retrieve_response_code($plugin_info) === 200) {
 					$response = json_decode( wp_remote_retrieve_body( $plugin_info ) );
 					if (empty($response)) {
-						return;
+						return false;
 					} else {
 						return true;
 					}
@@ -358,7 +389,7 @@ class Dependencies
 			}
 		}
 
-		return;
+		return false;
 	}
 
 	/**
@@ -369,6 +400,8 @@ class Dependencies
 	 *
 	 * @param string $theme_slug WordPress theme slug
 	 * @param string $repo_hosting_service The hosting service where the theme can be downloaded from (e.g. WordPress.org)
+	 *
+	 * @return bool True if the theme is available, false if not available
 	 */
 	public function isThemeAvailable($theme_slug, $repo_hosting_service = 'wordpress')
 	{
@@ -394,7 +427,7 @@ class Dependencies
 			if (!is_wp_error($theme_info) && wp_remote_retrieve_response_code($theme_info) === 200) {
 				$response = json_decode(wp_remote_retrieve_body($theme_info));
 				if (empty($response)) {
-					return;
+					return false;
 				} else {
 					return true;
 				}
@@ -402,7 +435,7 @@ class Dependencies
 			}
 		}
 
-		return;
+		return false;
 	}
 
 	/**
@@ -712,7 +745,6 @@ class Dependencies
 	 */
 	public function isWordPressPlugin($plugin_slug)
 	{
-		//var_dump( $plugin_slug);
 		if (strpos($plugin_slug, $this->wp_packagist_namespace['plugin']) !== false) {
 
 			return true;
@@ -854,12 +886,16 @@ class Dependencies
 	 * Set the path to install WordPress plugins and themes into
 	 *
 	 * Not all WordPress websites use the default WordPress directory structure. Some sites don't use wp-content to store their assets (e.g. Bedrock, https://github.com/roots/bedrock), some use subdirectories for their wordpress installs but manage composer assets in an ancestor directory. Allow thiose sites to set their own path to install their WordPress assets.
-	 * @param string $path Path to install the composer packages
+	 * @param string $path Path to install the WordPres composer packages (i.e. themes and plugins)
 	 *
 	 * @return void
 	 */
-	public function setInstallerPath($path)
+	public function setInstallerPath($path = 'wp-content')
 	{
+		if (empty($path)) {
+			$path = 'wp-content';
+		}
+
 		$this->assets_install_path = $path;
 	}
 
