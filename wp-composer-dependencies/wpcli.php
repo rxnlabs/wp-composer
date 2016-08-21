@@ -28,19 +28,19 @@ class WPCLI
 	public function registerCommands()
 	{
 		\WP_CLI::add_command('composer plugins', array($this, 'plugins'), [
-			'after_wp_config_load' => $this->setInstallerPath()
+			'before_invoke' => $this->setInstallerPath()
 		]);
 		\WP_CLI::add_command('composer themes', array($this, 'themes'), [
-			'after_wp_config_load' => $this->setInstallerPath()
+			'before_invoke' => $this->setInstallerPath()
 		]);
 		\WP_CLI::add_command('composer add', array($this, 'addAllDependencies'), [
-			'after_wp_config_load' => $this->setInstallerPath()
+			'before_invoke' => $this->setInstallerPath()
 		]);
 		\WP_CLI::add_command('composer plugin', array($this, 'plugin'), [
-			'after_wp_config_load' => $this->setInstallerPath()
+			'before_invoke' => $this->setInstallerPath()
 		]);
 		\WP_CLI::add_command('composer theme', array($this, 'theme'), [
-			'after_wp_config_load' => $this->setInstallerPath()
+			'before_invoke' => $this->setInstallerPath()
 		]);
 		\WP_CLI::add_command('composer install', array($this, 'installDependencies'));
 	}
@@ -519,7 +519,6 @@ class WPCLI
 		ob_start();
 		$installed_plugins = \WP_CLI::run_command(array('plugin', 'list'), array('format'=>'json'));
 		$plugins_found = json_decode(ob_get_clean(), true);
-		ob_end_clean();
 		$plugins_added = array();
 
 		if (!empty($composer) && is_array($plugins_found)) {
@@ -598,7 +597,6 @@ class WPCLI
 		ob_start();
 		\WP_CLI::run_command(array('theme', 'list'), array('format'=>'json'));
 		$themes_found = json_decode(ob_get_clean(), true);
-		ob_end_clean();
 		$themes_added = array();
 
 		if (!empty($composer) && is_array($themes_found)) {
@@ -1541,8 +1539,6 @@ class WPCLI
 	 */
 	private function setInstallerPath()
 	{
-		ob_start();
-		\WP_CLI::run_command(array('plugin', 'path'));
 		$installer_path = basename($this->getAssetsPath(), 2);
 		$this->composer->setInstallerPath($installer_path);
 	}
@@ -1560,7 +1556,6 @@ class WPCLI
 		ob_start();
 		$path = \WP_CLI::run_command(['plugin', 'path'], [], ['quiet']);
 		$path = ob_get_clean();
-		ob_end_clean();
 		return @dirname($path);
 	}
 }
