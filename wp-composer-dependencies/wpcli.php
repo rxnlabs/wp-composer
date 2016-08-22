@@ -466,6 +466,13 @@ class WPCLI
 	 *
 	 * If a theme or plugin has a composer.json, attempt to install those dependencies if they are not currently installed.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--type]
+	 * : Type of WordPress asset to install. The types are:
+	 * - "plugins" Will install the composer dependencies of plugins
+	 * - "themes" Will install the composer dependencies of plugins
+	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
 	 *
@@ -1469,8 +1476,8 @@ class WPCLI
 							if (!is_dir($vendor_dir)) {
 								$plugin_folder = basename($plugin, 1);
 								\WP_CLI::line(sprintf('Installing dependencies for %s plugin...', $plugin_folder));
-								ob_end_clean();
-								ob_flush();
+								@ob_end_clean();
+								@ob_flush();
 								$working_directory = sprintf('--working-dir=%s', $plugin);
 								$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
 								$composer = new \Composer\Console\Application();
@@ -1516,8 +1523,8 @@ class WPCLI
 						if (!is_dir($vendor_dir)) {
 							$theme_folder = basename($theme, 1);
 							\WP_CLI::line(sprintf('Installing dependencies for %s theme...', $theme_folder));
-							ob_end_clean();
-							ob_flush();
+							@ob_end_clean();
+							@ob_flush();
 							$working_directory = sprintf('--working-dir=%s', $theme);
 							$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
 							$composer = new \Composer\Console\Application();
@@ -1545,7 +1552,7 @@ class WPCLI
 	}
 
 	/**
-	 * Get the WordPress plugins install paths
+	 * Get the WordPress plugin install path
 	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
