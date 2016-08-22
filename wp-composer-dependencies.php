@@ -10,7 +10,7 @@ License: A "Slug" license name e.g. GPL2
 */
 
 // check if installed and active as a WordPress plugin or a WP-CLI package
-if ( is_plugin_active('wp-composer-dependencies') ) {
+if ( function_exists('is_plugin_active') && is_plugin_active('wp-composer-dependencies') ) {
 	require __DIR__ . '/vendor/autoload.php';
 }
 
