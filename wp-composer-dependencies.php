@@ -8,7 +8,12 @@ Author: De'Yonte W. <dev@rxnlabs.com>
 Author URI: https://rxnlabs.com
 License: A "Slug" license name e.g. GPL2
 */
-require __DIR__.'/vendor/autoload.php';
+
+// check if installed and active as a WordPress plugin or a WP-CLI package
+if ( is_plugin_active('wp-composer-dependencies') ) {
+	require __DIR__ . '/vendor/autoload.php';
+}
+
 $composer_dependencies = new \rxnlabs\Dependencies();
 if (defined('WP_CLI') && WP_CLI && php_sapi_name() === 'cli') {
 	$composer_dependencies_wp_cli = new \rxnlabs\WPCLI($composer_dependencies);

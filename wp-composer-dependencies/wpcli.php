@@ -27,21 +27,16 @@ class WPCLI
 	 */
 	public function registerCommands()
 	{
-		\WP_CLI::add_command('composer plugins', array($this, 'plugins'), [
-			'before_invoke' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer themes', array($this, 'themes'), [
-			'before_invoke' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer add', array($this, 'addAllDependencies'), [
-			'before_invoke' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer plugin', array($this, 'plugin'), [
-			'before_invoke' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer theme', array($this, 'theme'), [
-			'before_invoke' => $this->setInstallerPath()
-		]);
+		$callbacks = [
+			'before_invoke' => function() {
+				$this->setInstallerPath();
+			}
+		];
+		\WP_CLI::add_command('composer plugins', array($this, 'plugins'), $callbacks);
+		\WP_CLI::add_command('composer themes', array($this, 'themes'), $callbacks);
+		\WP_CLI::add_command('composer add', array($this, 'addAllDependencies'), $callbacks);
+		\WP_CLI::add_command('composer plugin', array($this, 'plugin'), $callbacks);
+		\WP_CLI::add_command('composer theme', array($this, 'theme'), $callbacks);
 		\WP_CLI::add_command('composer install', array($this, 'installDependencies'));
 	}
 
@@ -59,26 +54,32 @@ class WPCLI
 	{
 		\WP_CLI::add_hook('after_invoke:plugin install', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->addPlugin($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:plugin uninstall', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:plugin delete', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:theme install', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->addTheme($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:theme uninstall', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:theme delete', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
 		});
 	}
