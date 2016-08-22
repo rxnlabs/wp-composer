@@ -27,21 +27,16 @@ class WPCLI
 	 */
 	public function registerCommands()
 	{
-		\WP_CLI::add_command('composer plugins', array($this, 'plugins'), [
-			'after_wp_config_load' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer themes', array($this, 'themes'), [
-			'after_wp_config_load' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer add', array($this, 'addAllDependencies'), [
-			'after_wp_config_load' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer plugin', array($this, 'plugin'), [
-			'after_wp_config_load' => $this->setInstallerPath()
-		]);
-		\WP_CLI::add_command('composer theme', array($this, 'theme'), [
-			'after_wp_config_load' => $this->setInstallerPath()
-		]);
+		$callbacks = [
+			'before_invoke' => function() {
+				$this->setInstallerPath();
+			}
+		];
+		\WP_CLI::add_command('composer plugins', array($this, 'plugins'), $callbacks);
+		\WP_CLI::add_command('composer themes', array($this, 'themes'), $callbacks);
+		\WP_CLI::add_command('composer add', array($this, 'addAllDependencies'), $callbacks);
+		\WP_CLI::add_command('composer plugin', array($this, 'plugin'), $callbacks);
+		\WP_CLI::add_command('composer theme', array($this, 'theme'), $callbacks);
 		\WP_CLI::add_command('composer install', array($this, 'installDependencies'));
 	}
 
@@ -59,26 +54,32 @@ class WPCLI
 	{
 		\WP_CLI::add_hook('after_invoke:plugin install', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->addPlugin($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:plugin uninstall', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:plugin delete', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:theme install', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->addTheme($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:theme uninstall', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
 		});
 		\WP_CLI::add_hook('after_invoke:theme delete', function() {
 			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+			$this->setInstallerPath();
 			$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
 		});
 	}
@@ -271,7 +272,7 @@ class WPCLI
 	 * - "add" will add the specified plugin slug to the composer.json file
 	 * - "remove" will remove the specified plugin from the composer.json file
 	 *
-	 * <plugin|zip|url>...
+	 * <plugin>...
 	 * : One or more plugin slug. When using the plugin slug to specify the plugin, by default only a plugin available on wordpress.org will be added
 	 *
 	 * [--file]
@@ -347,7 +348,7 @@ class WPCLI
 	 * - "add" will add the specified theme slug to the composer.json file
 	 * - "remove" will remove the specified theme from the composer.json file
 	 *
-	 * <theme|zip|url>...
+	 * <theme>...
 	 * : One or more theme slugs. When using the theme slug to specify the theme, by default only a theme available on wordpress.org will be added
 	 *
 	 * [--file]
@@ -465,6 +466,13 @@ class WPCLI
 	 *
 	 * If a theme or plugin has a composer.json, attempt to install those dependencies if they are not currently installed.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--type]
+	 * : Type of WordPress asset to install. The types are:
+	 * - "plugins" Will install the composer dependencies of plugins
+	 * - "themes" Will install the composer dependencies of plugins
+	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
 	 *
@@ -519,7 +527,6 @@ class WPCLI
 		ob_start();
 		$installed_plugins = \WP_CLI::run_command(array('plugin', 'list'), array('format'=>'json'));
 		$plugins_found = json_decode(ob_get_clean(), true);
-		ob_end_clean();
 		$plugins_added = array();
 
 		if (!empty($composer) && is_array($plugins_found)) {
@@ -598,7 +605,6 @@ class WPCLI
 		ob_start();
 		\WP_CLI::run_command(array('theme', 'list'), array('format'=>'json'));
 		$themes_found = json_decode(ob_get_clean(), true);
-		ob_end_clean();
 		$themes_added = array();
 
 		if (!empty($composer) && is_array($themes_found)) {
@@ -1470,8 +1476,8 @@ class WPCLI
 							if (!is_dir($vendor_dir)) {
 								$plugin_folder = basename($plugin, 1);
 								\WP_CLI::line(sprintf('Installing dependencies for %s plugin...', $plugin_folder));
-								ob_end_clean();
-								ob_flush();
+								@ob_end_clean();
+								@ob_flush();
 								$working_directory = sprintf('--working-dir=%s', $plugin);
 								$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
 								$composer = new \Composer\Console\Application();
@@ -1517,8 +1523,8 @@ class WPCLI
 						if (!is_dir($vendor_dir)) {
 							$theme_folder = basename($theme, 1);
 							\WP_CLI::line(sprintf('Installing dependencies for %s theme...', $theme_folder));
-							ob_end_clean();
-							ob_flush();
+							@ob_end_clean();
+							@ob_flush();
 							$working_directory = sprintf('--working-dir=%s', $theme);
 							$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
 							$composer = new \Composer\Console\Application();
@@ -1541,14 +1547,12 @@ class WPCLI
 	 */
 	private function setInstallerPath()
 	{
-		ob_start();
-		\WP_CLI::run_command(array('plugin', 'path'));
 		$installer_path = basename($this->getAssetsPath(), 2);
 		$this->composer->setInstallerPath($installer_path);
 	}
 
 	/**
-	 * Get the WordPress plugins install paths
+	 * Get the WordPress plugin install path
 	 *
 	 * @since 1.0.0
 	 * @version 1.0.0
@@ -1560,7 +1564,6 @@ class WPCLI
 		ob_start();
 		$path = \WP_CLI::run_command(['plugin', 'path'], [], ['quiet']);
 		$path = ob_get_clean();
-		ob_end_clean();
 		return @dirname($path);
 	}
 }
