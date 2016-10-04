@@ -1,46 +1,49 @@
 {
-	"name": "rxnlabs/wp-composer-dependencies",
-	"description": "Manage your WordPress dependencies using the power of Composer, WP-CLI, and http://wpackagist.org/",
-	"version": "0.1-alpha",
-	"authors": [
-		{
-			"name": "rxnlabs",
-			"email": "dev@rxnlabs.com",
-			"homepage": "https://rxnlabs.com"
-		}
-	],
-	"keywords": [
-		"wordpress wp composer dependencies wp-cli"
-	],
-	"require": {
-		"php": ">=5.4.0",
-		"salsify/json-streaming-parser": "^6.0",
-		"maxakawizard/json-collection-parser": "^1.1",
-		"camspiers/json-pretty": "^1.0",
-		"league/flysystem": "^1.0"
-	},
-	"require-dev": {
-		"phpunit/phpunit": "4.8.26",
-		"whatthejeff/nyancat-phpunit-resultprinter": "^1.2",
+    "name": "rxnlabs/wp-composer-dependencies",
+    "description": "Manage your WordPress dependencies using the power of Composer, WP-CLI, and http://wpackagist.org/",
+    "version": "0.1-alpha",
+    "support": {
+        "issues": "https://github.com/rxnlabs/wp-composer/issues"
+    },
+    "authors": [
+        {
+            "name": "rxnlabs",
+            "email": "dev@rxnlabs.com",
+            "homepage": "https://rxnlabs.com"
+        }
+    ],
+    "keywords": [
+        "wordpress wp composer dependencies wp-cli"
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "salsify/json-streaming-parser": "^6.0",
+        "maxakawizard/json-collection-parser": "^1.1",
+        "camspiers/json-pretty": "^1.0",
+        "league/flysystem": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.8.26",
+        "whatthejeff/nyancat-phpunit-resultprinter": "^1.2",
         "mockery/mockery": "^0.9.4",
         "10up/wp_mock": "dev-master"
-	},
-	"minimum-stability": "dev",
-	"autoload": {
-		"classmap": [
-			"wp-composer-dependencies"
-		],
-		"files": ["wp-composer-dependencies.php"]
-	},
-	"archive": {
-		"exclude": [
-			".gitignore",
-			".gitattributes",
-			".travis.yml",
-			"tests",
-			"phpunit.xml",
-			".editorconfig",
-			"coverage"
-		]
-	}
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "classmap": [
+            "wp-composer-dependencies"
+        ],
+        "files": ["wp-composer-dependencies.php"]
+    },
+    "archive": {
+        "exclude": [
+            ".gitignore",
+            ".gitattributes",
+            ".travis.yml",
+            "tests",
+            "phpunit.xml",
+            ".editorconfig",
+            "coverage"
+        ]
+    }
 }

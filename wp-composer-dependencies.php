@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WP Composer Dependencies
+Plugin Name: WP Composer
 Plugin URI: https://rxnlabs.com
 Description: Manage your WordPress dependencies using Composer including themes and plugins
 Version: 1.0.0

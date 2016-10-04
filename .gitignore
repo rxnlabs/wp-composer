@@ -10,6 +10,9 @@ sftp-config.json
 # Random Files
 /*.sql
 .DS_Store
+**/.DS_Store
+__MACOSX/
+**/__MACOSX
 .editorconfig
 
 # Vendor Files
