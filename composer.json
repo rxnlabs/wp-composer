@@ -7,7 +7,7 @@
     },
     "authors": [
         {
-            "name": "rxnlabs",
+            "name": "De'Yonté W.",
             "email": "dev@rxnlabs.com",
             "homepage": "https://rxnlabs.com"
         }
@@ -15,6 +15,9 @@
     "keywords": [
         "wordpress wp composer dependencies wp-cli"
     ],
+    "config": {
+        "preferred-install": "dist"
+    },
     "require": {
         "php": ">=5.4.0",
         "salsify/json-streaming-parser": "^6.0",
@@ -43,7 +46,8 @@
             "tests",
             "phpunit.xml",
             ".editorconfig",
-            "coverage"
+            "coverage",
+            "docs/"
         ]
     }
 }

@@ -252,9 +252,9 @@ class Dependencies
 
 		$add_installer_paths = function(array $dependencies) {
 			$wordpress_path = $this->getInstallerPath();
-			$theme_path = $wordpress_path.'/themes/{$name}';
-			$plugin_path = $wordpress_path.'/plugins/{$name}';
-			$mu_plugin_path = $wordpress_path.'/mu-plugins/{$name}';
+			$theme_path = $wordpress_path.'/themes/{$name}/';
+			$plugin_path = $wordpress_path.'/plugins/{$name}/';
+			$mu_plugin_path = $wordpress_path.'/mu-plugins/{$name}/';
 
 			$wordpress_install_paths = [
 				$theme_path => ["type:wordpress-theme"],
