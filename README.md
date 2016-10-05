@@ -12,7 +12,7 @@ Run `wp composer --help` to get the list of commands and subcommands available.
 ## Requirements
 
 * Requires [WP-CLI](https://github.com/wp-cli/wp-cli) version 0.24.0 and up
-* [Composer]((https://getcomposer.org)
+* [Composer](https://getcomposer.org)
 
 ## Commands
 
