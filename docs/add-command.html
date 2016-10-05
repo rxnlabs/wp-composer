@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Add Command - WP Composer</title>
+
+        <link rel="stylesheet" href="https://rxnlabs.github.io/wp-composer/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://rxnlabs.github.io/wp-composer/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://rxnlabs.github.io/wp-composer/css/highlight.dark.css">
+        <link rel="stylesheet" href="https://rxnlabs.github.io/wp-composer/css/main.css">
+        <script type="application/ld+json">
+        {
+          "@context": "http://schema.org",
+          "@type": "Article",
+          "author": "De'Yonté W.",
+          "datePublished": "2016-10-04",
+          "name": "Add Command - WP Composer"
+        }
+        </script>
+    </head>
+    <body>
+
+        <header class="navbar navbar-default navbar-fixed-top">
+
+            <a class="navbar-brand" href="https://rxnlabs.github.io/wp-composer/">
+                Add Command - WP Composer
+                <small class="hidden-xs hidden-sm">
+                    Manage your WordPress dependencies
+                </small>
+            </a>
+
+                            <a href="https://github.com/rxnlabs/wp-composer">
+                    <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+                </a>
+            
+        </header>
+
+        <main class="container-fluid">
+            <div class="row">
+
+                
+                    <nav id="sidebar" class="col-sm-3 col-lg-2" role="navigation">
+
+                        <ul class="nav nav-pills nav-stacked">
+                            
+                                <li class=" add-command.md  home">
+                                    <a href="https://rxnlabs.github.io/wp-composer/index.html">
+                                        Home Page
+                                    </a>
+                                                                        <ul>
+                                                                        </ul>
+                                                                    </li>
+                            
+                                <li class=" add-command.md  installation">
+                                    <a href="https://rxnlabs.github.io/wp-composer/installation.html">
+                                        Installation
+                                    </a>
+                                                                        <ul>
+                                                                        </ul>
+                                                                    </li>
+                            
+                                <li class=" add-command.md  commands">
+                                    <a href="https://rxnlabs.github.io/wp-composer/commands.html">
+                                        Commands
+                                    </a>
+                                                                        <ul>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/plugins-command.html">
+                                                plugins
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/themes-command.html">
+                                                themes
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/plugin-command.html">
+                                                plugin
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/theme-command.html">
+                                                theme
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/add-command.html">
+                                                add
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/install-command.html">
+                                                install
+                                            </a>
+                                        </li>
+                                                                        </ul>
+                                                                    </li>
+                            
+                                <li class=" add-command.md  faqs">
+                                    <a href="https://rxnlabs.github.io/wp-composer/faqs.html">
+                                        FAQs
+                                    </a>
+                                                                        <ul>
+                                                                        </ul>
+                                                                    </li>
+                                                    </ul>
+
+                    </nav>
+
+                
+                <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
+                    <h2 id="add-command">Add Command</h2>
+<p>Add installed plugins and themes to composer.json</p>
+<blockquote>
+<p><strong>Note</strong> Some commands will generate a composer.json file if one does not currently exist</p>
+</blockquote>
+<h3 id="add">add</h3>
+<p>Add all plugins and themes to the composer.json file</p>
+<hr />
+<pre><code>wp composer add</code></pre>
+<hr />
+<h5 id="example">Example</h5>
+<p>Let's say that your site has the themes twentyeleven, and twentysixteeen installed. It also has the plugins bbpress, and buddypress installed.</p>
+<hr />
+<pre><code># Add all installed plugins and themes as dependencies to a composer.json file
+wp composer add --file=web/assets</code></pre>
+<hr />
+<h5 id="result">Result</h5>
+<p>A composer.json file will be generated and saved to web/assets/composer.json with twentysixteen added as a dependency and twentyfourteen added as a dev dependency</p>
+<pre><code class="language-json">{
+    "name": "wp-composer-dependencies",
+    "description": "Theme and plugin dependencies for the site http://example.com",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://wpackagist.org"
+        }
+    ],
+    "require": {
+        "wpackagist-theme/twentysixteen": "*",
+        "wpackagist-theme/twentyeleven": "*",
+        "wpackagist-plugin/bbpress": "*",
+        "wpackagist-plugin/buddypress": "*"
+    },
+    "extra": {
+        "installer-paths": {
+            "wp-content/themes/{$name}": [
+                "type:wordpress-theme"
+            ],
+            "wp-content/plugins/{$name}": [
+                "type:wordpress-plugin"
+            ],
+            "wp-content/mu-plugins/{$name}": [
+                "type:wordpress-muplugin"
+            ]
+        }
+    }
+}</code></pre>
+<h4 id="options">Options</h4>
+<p><em>[--file]</em></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Path to save the composer.json file</p>
+<p><em>[--latest]</em></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Always use the latest version from whatever repo the theme is coming from. <strong>default</strong>.</p>
+<blockquote>
+<p><strong>Note</strong> Unlike plugins, themes on wordpress.org don't have specific versions (e.g. v1.0, v2.0, etc...), so the latest version of a theme will always be downloaded</p>
+</blockquote>
+<p><em>[--installer-paths]</em> OR <em>[--ip]</em></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Set the WordPress plugins and themes installer path</p>
+<p><em>[--dev]</em></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Add theme as a  dev requirement in composer.json</p>
+                </section>
+
+            </div>
+        </main>
+
+        <footer>
+            <div class="container-fluid">
+                <p class="text-muted">
+                    Last updated <time itemprop="datePublished" content="2016-10-04">October 04, 2016</time>. Documentation generated using <a target="_blank" rel="noopener noreferrer" href="http://couscous.io">Couscous</a>
+                </p>
+            </div>
+        </footer>
+
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//yastatic.net/highlightjs/8.2/highlight.min.js"></script>
+        <script src="js/app.js"></script>
+
+        <script>
+            $(function() {
+                $("section>h1").wrap('<div class="page-header" />');
+                // Syntax highlighting
+                hljs.initHighlightingOnLoad();
+            });
+        </script>
+
+    </body>
+</html>
