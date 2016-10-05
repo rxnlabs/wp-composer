@@ -493,6 +493,7 @@ class Dependencies
 	 */
 	public function addPluginDependency($plugin_name, $version = '*')
 	{
+		$plugin_name = $this->stripSpecialChars($plugin_name);
 		$this->composer_dependencies['require']['plugins'][$plugin_name] = $version;
 	}
 
@@ -507,6 +508,7 @@ class Dependencies
 	 */
 	public function addDevPluginDependency($plugin_name, $version = '*')
 	{
+		$plugin_name = $this->stripSpecialChars($plugin_name);
 		$this->composer_dependencies['require-dev']['plugins'][$plugin_name] = $version;
 	}
 
@@ -903,9 +905,27 @@ class Dependencies
 	 * Get the path to install WordPress plugins and themes into
 	 *
 	 * @see \rxnlabs\Dependencies\setInstallPath For why we need this
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @return string Path to install the site plugins and themes
 	 */
 	public function getInstallerPath()
 	{
 		return $this->assets_install_path;
+	}
+
+	/**
+	 * Strip all non-alphanumeric characters from theme and plugin name
+	 *
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 *
+	 * @return string Plugin or theme slug without special chars
+	 */
+	public function stripSpecialChars($string)
+	{
+		return preg_replace('/[^\w-]/', '', $string);
 	}
 }
