@@ -10,6 +10,15 @@ class WPCLI
 	protected $composer;
 
 	/**
+	 * Prevent hooks from running.
+	 *
+	 * Cancel hooks. This plugin hooks into the wp plugin/theme install and uninstall commands. So when a plugin is installed through wp plugin install, it automatically gets added to the composer.json file
+	 * @since 1.0.1
+	 * @version 1.0.0
+	 */
+	private $run_hooks = true;
+
+	/**
 	 * WPCLI constructor.
 	 * @param \rxnlabs\Dependencies $composer
 	 */
@@ -53,34 +62,46 @@ class WPCLI
 	public function hooks()
 	{
 		\WP_CLI::add_hook('after_invoke:plugin install', function() {
-			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
-			$this->setInstallerPath();
-			$this->addPlugin($plugins_or_themes_slug, $args, $assoc_args);
+			if ($this->run_hooks === true) {
+				list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+				$this->setInstallerPath();
+				$this->addPlugin($plugins_or_themes_slug, $args, $assoc_args);
+			}
 		});
 		\WP_CLI::add_hook('after_invoke:plugin uninstall', function() {
-			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
-			$this->setInstallerPath();
-			$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
+			if ($this->run_hooks === true) {
+				list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+				$this->setInstallerPath();
+				$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
+			}
 		});
 		\WP_CLI::add_hook('after_invoke:plugin delete', function() {
-			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
-			$this->setInstallerPath();
-			$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
+			if ($this->run_hooks === true) {
+				list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+				$this->setInstallerPath();
+				$this->removePlugin($plugins_or_themes_slug, $args, $assoc_args);
+			}
 		});
 		\WP_CLI::add_hook('after_invoke:theme install', function() {
-			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
-			$this->setInstallerPath();
-			$this->addTheme($plugins_or_themes_slug, $args, $assoc_args);
+			if ($this->run_hooks === true) {
+				list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+				$this->setInstallerPath();
+				$this->addTheme($plugins_or_themes_slug, $args, $assoc_args);
+			}
 		});
 		\WP_CLI::add_hook('after_invoke:theme uninstall', function() {
-			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
-			$this->setInstallerPath();
-			$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
+			if ($this->run_hooks === true) {
+				list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+				$this->setInstallerPath();
+				$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
+			}
 		});
 		\WP_CLI::add_hook('after_invoke:theme delete', function() {
-			list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
-			$this->setInstallerPath();
-			$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
+			if ($this->run_hooks === true) {
+				list($plugins_or_themes_slug, $args, $assoc_args) = $this->getCommandHookArgs();
+				$this->setInstallerPath();
+				$this->removeTheme($plugins_or_themes_slug, $args, $assoc_args);
+			}
 		});
 	}
 
@@ -1194,6 +1215,7 @@ class WPCLI
 			}
 
 			if (!empty($found_plugins)) {
+				$this->run_hooks = false;
 				try {
 					$success = $this->composer->saveComposer( $file );
 					$saved_file = $file;
@@ -1271,6 +1293,7 @@ class WPCLI
 			}
 
 			if (!empty($found_themes)) {
+				$this->run_hooks = false;
 				try {
 
 					$success = $this->composer->saveComposer( $file );
@@ -1336,6 +1359,7 @@ class WPCLI
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_plugin])) {
 			$found_plugins = array();
+			$this->run_hooks = false;
 			foreach ($composer[$type_of_plugin] as $plugin_name => $version) {
 				if ($this->composer->isWordPressPlugin($plugin_name)) {
 					$plugin_slug = $this->composer->removeNamespace($plugin_name, 'plugin');
@@ -1402,6 +1426,7 @@ class WPCLI
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_theme])) {
 			$found_themes = array();
+			$this->run_hooks = false;
 			foreach ($composer[$type_of_theme] as $theme_name=>$version) {
 				if ($this->composer->isWordPressTheme($theme_name)) {
 					$theme_slug = $this->composer->removeNamespace($theme_name, 'theme');
