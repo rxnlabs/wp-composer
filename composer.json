@@ -20,8 +20,6 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "salsify/json-streaming-parser": "^6.0",
-        "maxakawizard/json-collection-parser": "^1.1",
         "camspiers/json-pretty": "^1.0",
         "league/flysystem": "^1.0"
     },
