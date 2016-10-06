@@ -87,7 +87,7 @@ class Dependencies
 	 * Dependencies constructor.
 	 * @param string $installer_path Set the default installer path for the WordPress plugins
 	 */
-	public function __construct(string $installer_path = '') {
+	public function __construct($installer_path = '') {
 		// set the default installer path for the wordpress assets (we can guess that this plugin is two directories below the wp-content folder or the folder that replaced wp-content)
 		if (empty($installer_path) && function_exists('plugin_dir_path')) {
 			$installer_path = basename(dirname(plugin_dir_path(__DIR__), 2));
@@ -118,7 +118,7 @@ class Dependencies
 	 * @since 1.0.0
 	 * @version 1.0.0
 	 */
-	public function saveComposer(string $composer_file_name = 'composer.json', string $save_path = '')
+	public function saveComposer $composer_file_name = 'composer.json', $save_path = '')
 	{
 		// attempt to extract save path from the passed $composer_file_name path
 		if (empty($save_path) && !empty($composer_file_name)) {

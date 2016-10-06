@@ -21,7 +21,8 @@ This installs the plugin dependencies. Then, activate the plugin.
 
 ### Requirements
 
-Requires WP-CLI version 0.24.0 and up.
+* PHP 5.4 and up
+* Requires WP-CLI version 0.24.0 and up.
 
 After installing as a WP-CLI package or as a plugin, run `wp composer --help` to see the list of commands and subcommands available.
 
