@@ -47,7 +47,9 @@
             "phpunit.xml",
             ".editorconfig",
             "coverage",
-            "docs/"
+            "docs/",
+            "docs/*",
+            "couscous.yml"
         ]
     }
 }

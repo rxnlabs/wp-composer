@@ -1,4 +1,4 @@
-=== WP Composer Dependencies ===
+=== WP Composer ===
 Contributors: rxnlabs
 Donate link: https://rxnlabs.com
 Tags: composer, dependencies, multisite, packagist

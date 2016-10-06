@@ -25,3 +25,7 @@ __MACOSX/
 /vendor/webmozart
 /vendor/whatthejeff
 /vendor/bin
+
+# Documentation files
+website/.generated
+website/.couscous

@@ -4,15 +4,28 @@ WP Composer is a WP-CLI package for managing your WordPress theme and plugin dep
 
 ## Install
 
+### Installing as a WP-CLI package (preferred installation method)
+---
+    wp package install rxnlabs/wp-composer-dependencies
+---
+
 ### Installing as a plugin
 
-Clone this repo into the plugins/ folder of your WordPress site (i.e. plugins/wp-composer), run `composer install --no-dev` to fetch the plugin dependencies. Then, activate the plugin.
+Clone this repo into plugins/ folder of your WordPress site, run:
 
-Run `wp composer --help` to get the list of commands and subcommands available.
-## Requirements
+---
+    composer install --no-dev
+---
 
-* Requires [WP-CLI](https://github.com/wp-cli/wp-cli) version 0.24.0 and up
-* [Composer](https://getcomposer.org)
+This installs the plugin dependencies. Then, activate the plugin.
+
+### Requirements
+
+Requires WP-CLI version 0.24.0 and up.
+
+After installing as a WP-CLI package or as a plugin, run `wp composer --help` to see the list of commands and subcommands available.
+
+![WP Composer Help Output](docs/images/wp-composer-help.png)
 
 ## Commands
 

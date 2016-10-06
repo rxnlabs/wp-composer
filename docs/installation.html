@@ -15,19 +15,9 @@
           "@context": "http://schema.org",
           "@type": "Article",
           "author": "De'Yonté W.",
-          "datePublished": "2016-10-05",
+          "datePublished": "2016-10-06",
           "name": "Installation - WP Composer"
         }
-        </script>
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-                        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-            ga('create', 'UA-35419320-6', 'auto');
-            ga('send', 'pageview');
-
         </script>
     </head>
     <body>
@@ -50,80 +40,93 @@
         <main class="container-fluid">
             <div class="row">
 
+                
+                    <nav id="sidebar" class="col-sm-3 col-lg-2" role="navigation">
 
-                <nav id="sidebar" class="col-sm-3 col-lg-2" role="navigation">
-
-                    <ul class="nav nav-pills nav-stacked">
-
-                        <li class=" add-command.md  home">
-                            <a href="https://rxnlabs.github.io/wp-composer/index.html">
-                                Home Page
-                            </a>
-                        </li>
-
-                        <li class=" add-command.md  installation">
-                            <a href="https://rxnlabs.github.io/wp-composer/installation.html">
-                                Installation
-                            </a>
-                        </li>
-
-                        <li class=" add-command.md  commands">
-                            <a href="https://rxnlabs.github.io/wp-composer/commands.html">
-                                Commands
-                            </a>
-                            <ul>
-                                <li class="">
-                                    <a href="https://rxnlabs.github.io/wp-composer/plugins-command.html">
-                                        plugins
+                        <ul class="nav nav-pills nav-stacked">
+                            
+                                <li class=" installation.md  home">
+                                    <a href="https://rxnlabs.github.io/wp-composer/index.html">
+                                        Home Page
                                     </a>
-                                </li>
-                                <li class="">
-                                    <a href="https://rxnlabs.github.io/wp-composer/themes-command.html">
-                                        themes
+                                                                        <ul>
+                                                                        </ul>
+                                                                    </li>
+                            
+                                <li class=" installation.md  installation">
+                                    <a href="https://rxnlabs.github.io/wp-composer/installation.html">
+                                        Installation
                                     </a>
-                                </li>
-                                <li class="">
-                                    <a href="https://rxnlabs.github.io/wp-composer/plugin-command.html">
-                                        plugin
+                                                                        <ul>
+                                                                        </ul>
+                                                                    </li>
+                            
+                                <li class=" installation.md  commands">
+                                    <a href="https://rxnlabs.github.io/wp-composer/commands.html">
+                                        Commands
                                     </a>
-                                </li>
-                                <li class="">
-                                    <a href="https://rxnlabs.github.io/wp-composer/theme-command.html">
-                                        theme
+                                                                        <ul>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/plugins-command.html">
+                                                plugins
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/themes-command.html">
+                                                themes
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/plugin-command.html">
+                                                plugin
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/theme-command.html">
+                                                theme
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/add-command.html">
+                                                add
+                                            </a>
+                                        </li>
+                                                                            <li class="">
+                                            <a href="https://rxnlabs.github.io/wp-composer/install-command.html">
+                                                install
+                                            </a>
+                                        </li>
+                                                                        </ul>
+                                                                    </li>
+                            
+                                <li class=" installation.md  faqs">
+                                    <a href="https://rxnlabs.github.io/wp-composer/faqs.html">
+                                        FAQs
                                     </a>
-                                </li>
-                                <li class="">
-                                    <a href="https://rxnlabs.github.io/wp-composer/add-command.html">
-                                        add
-                                    </a>
-                                </li>
-                                <li class="">
-                                    <a href="https://rxnlabs.github.io/wp-composer/install-command.html">
-                                        install
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                                                                        <ul>
+                                                                        </ul>
+                                                                    </li>
+                                                    </ul>
 
-                        <li class=" add-command.md  faqs">
-                            <a href="https://rxnlabs.github.io/wp-composer/faqs.html">
-                                FAQs
-                            </a>
-                        </li>
-                        <li class=" roadmap.md  roadmap">
-                            <a href="https://rxnlabs.github.io/wp-composer/roadmap.html">
-                                Roadmap
-                            </a>
-                        </li>
-                    </ul>
-
-                </nav>
+                    </nav>
 
                 
                 <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
                     <h1 id="installation">Installation</h1>
-                    <h2 id="installing-as-a-plugin">Installing as a plugin</h2>
-<p>Clone this repo into plugins/ folder of your WordPress site, run <pre><code>composer install --no-dev</code></pre> to fetch the plugin dependencies. Then, activate the plugin.</p>
+<h2 id="installing-as-a-wp-cli-package-preferred-installation-method">Installing as a WP-CLI package (preferred installation method)</h2>
+<hr />
+<pre><code>wp package install rxnlabs/wp-composer-dependencies</code></pre>
+<hr />
+<h2 id="installing-as-a-plugin">Installing as a plugin</h2>
+<p>Clone this repo into plugins/ folder of your WordPress site, run:</p>
+<hr />
+<pre><code>composer install --no-dev</code></pre>
+<hr />
+This installs the plugin dependencies. Then, activate the plugin.
+<h2 id="requirements">Requirements</h2>
+<p>Requires WP-CLI version 0.24.0 and up.</p>
+<p>After installing as a WP-CLI package or as a plugin, run <code>wp composer --help</code> to see the list of commands and subcommands available.</p>
+<p><img src="../images/wp-composer-help.png" alt="WP Composer Help Output" /></p>
                 </section>
 
             </div>
@@ -132,7 +135,7 @@
         <footer>
             <div class="container-fluid">
                 <p class="text-muted">
-                    Documentation generated using <a target="_blank" rel="noopener noreferrer" href="http://couscous.io">Couscous</a>
+                   Documentation generated using <a target="_blank" rel="noopener noreferrer" href="http://couscous.io">Couscous</a>
                 </p>
             </div>
         </footer>
