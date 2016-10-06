@@ -13,8 +13,11 @@ class WPCLI
 	 * Prevent hooks from running.
 	 *
 	 * Cancel hooks. This plugin hooks into the wp plugin/theme install and uninstall commands. So when a plugin is installed through wp plugin install, it automatically gets added to the composer.json file
+	 *
 	 * @since 1.0.1
 	 * @version 1.0.0
+	 *
+	 * @var bool
 	 */
 	private $run_hooks = true;
 
@@ -764,7 +767,7 @@ class WPCLI
 						}
 
 						if (isset($skipped[0])) {
-							\WP_CLI::error(sprintf('Unable to add %s as dependency to composer.json. The plugin was not found on Wordpress.org', implode(', ', $skipped)));
+							\WP_CLI::warning(sprintf('Unable to add %s as dependency to composer.json. The plugin was not found on Wordpress.org', implode(', ', $skipped)));
 						}
 
 						return true;
@@ -869,7 +872,7 @@ class WPCLI
 
 						\WP_CLI::success( $message );
 						if (isset($skipped[0])) {
-							\WP_CLI::error(sprintf('Unable to add %s as dependency to composer.json. The theme was not found on Wordpress.org', implode(', ', $skipped)));
+							\WP_CLI::warning(sprintf('Unable to add %s as dependency to composer.json. The theme was not found on Wordpress.org', implode(', ', $skipped)));
 						}
 
 						return true;

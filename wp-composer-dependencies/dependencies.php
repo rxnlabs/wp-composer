@@ -84,6 +84,16 @@ class Dependencies
 	public $assets_install_path;
 
 	/**
+	 * Stop these words from being interpreted as the name of plugins and throwing an error when running the install command.
+	 *
+	 * @since 1.0.1
+	 * @version 1.0.0
+	 *
+	 * @var string
+	 */
+	public $reserved_words = array('install', 'uninstall');
+
+	/**
 	 * Dependencies constructor.
 	 * @param string $installer_path Set the default installer path for the WordPress plugins
 	 */
@@ -494,7 +504,12 @@ class Dependencies
 	public function addPluginDependency($plugin_name, $version = '*')
 	{
 		$plugin_name = $this->stripSpecialChars($plugin_name);
-		$this->composer_dependencies['require']['plugins'][$plugin_name] = $version;
+
+		if (!in_array( $plugin_name, $this->reserved_words)) {
+			$this->composer_dependencies['require']['plugins'][$plugin_name] = $version;
+		}
+
+		return $plugin_name;
 	}
 
 	/**
@@ -509,7 +524,12 @@ class Dependencies
 	public function addDevPluginDependency($plugin_name, $version = '*')
 	{
 		$plugin_name = $this->stripSpecialChars($plugin_name);
-		$this->composer_dependencies['require-dev']['plugins'][$plugin_name] = $version;
+
+		if (!in_array( $plugin_name, $this->reserved_words)) {
+			$this->composer_dependencies['require-dev']['plugins'][$plugin_name] = $version;
+		}
+
+		return $plugin_name;
 	}
 
 	/**
