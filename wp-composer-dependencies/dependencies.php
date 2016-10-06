@@ -118,7 +118,7 @@ class Dependencies
 	 * @since 1.0.0
 	 * @version 1.0.0
 	 */
-	public function saveComposer $composer_file_name = 'composer.json', $save_path = '')
+	public function saveComposer($composer_file_name = 'composer.json', $save_path = '')
 	{
 		// attempt to extract save path from the passed $composer_file_name path
 		if (empty($save_path) && !empty($composer_file_name)) {
