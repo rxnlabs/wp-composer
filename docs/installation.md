@@ -24,4 +24,4 @@ Requires WP-CLI version 0.24.0 and up.
 
 After installing as a WP-CLI package or as a plugin, run `wp composer --help` to see the list of commands and subcommands available.
 
-![WP Composer Help Output](../images/wp-composer-help.png)
+![WP Composer Help Output](images/wp-composer-help.png)
