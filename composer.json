@@ -1,6 +1,7 @@
 {
     "name": "rxnlabs/wp-composer-dependencies",
     "description": "Manage your WordPress dependencies using the power of Composer, WP-CLI, and http://wpackagist.org/",
+    "type": "wp-cli-package",
     "version": "0.1-alpha",
     "support": {
         "issues": "https://github.com/rxnlabs/wp-composer/issues"
