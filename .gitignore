@@ -16,6 +16,7 @@ __MACOSX/
 .editorconfig
 
 # Vendor Files
+/vendor
 /vendor/phpdocumentor
 /vendor/doctrine
 /vendor/phpspec

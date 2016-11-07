@@ -87,11 +87,21 @@ class Dependencies
 	 * Stop these words from being interpreted as the name of plugins and throwing an error when running the install command.
 	 *
 	 * @since 1.0.1
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 *
 	 * @var string
 	 */
 	public $reserved_words = array('install', 'uninstall');
+
+	/**
+	 * Save the composer.json file with tabs or spaces
+	 *
+	 * @since 1.0.2
+	 * @version 1.0.2
+	 *
+	 * @var bool
+	 */
+	public $save_as_tabs = true;
 
 	/**
 	 * Dependencies constructor.
@@ -206,7 +216,13 @@ class Dependencies
 			}
 
 			$json_pretty = new \Camspiers\JsonPretty\JsonPretty;
-			$composer_dependencies = stripslashes($json_pretty->prettify($this->composer_dependencies));
+
+			if ($this->save_as_tabs) {
+				$composer_dependencies = stripslashes($json_pretty->prettify($this->composer_dependencies));
+			} else {
+				$composer_dependencies = stripslashes($json_pretty->prettify($this->composer_dependencies, '\s\s\s\s'));
+			}
+
 			$composer_file = sprintf('%s/%s', $save_path, $composer_file_name);
 			$get_real_path = realpath($composer_file);
 			// if the $composer_file_name doesn't exist
@@ -229,7 +245,7 @@ class Dependencies
 	 * Read the composer.json file to check for other dependencies.
 	 *
 	 * @since 1.0.0
-	 * @verion 1.0.0
+	 * @verion 1.0.2
 	 *
 	 * @param string $composer_file File path of composer.json file
 	 */
@@ -303,7 +319,11 @@ class Dependencies
 				];
 				$dependencies = $add_installer_paths($add_packagist_repo($dependencies));
 			} else {
-				$dependencies = json_decode($filesystem->read($composer_file), true);
+				$composer_file_string = $filesystem->read($composer_file);
+
+				$this->save_as_tabs = $this->detectTabs($composer_file_string);
+
+				$dependencies = json_decode($composer_file_string, true);
 
 				if (isset($dependencies['repositories'])) {
 					$repo_added_already = false;
@@ -947,5 +967,25 @@ class Dependencies
 	public function stripSpecialChars($string)
 	{
 		return preg_replace('/[^\w-]/', '', $string);
+	}
+
+	/**
+	 * Detect if line is indented with tabs
+	 *
+	 * @since 1.0.2
+	 * @version 1.0.2
+	 *
+	 * @param $line Input line to test against
+	 *
+	 * @return bool True if line is indented with tabs. False if not indented with tabs.
+	 */
+	public function detectTabs($line)
+	{
+		$is_tab = false;
+		if (preg_match("/\t/", $line)) {
+			$is_tab = true;
+		}
+
+		return $is_tab;
 	}
 }

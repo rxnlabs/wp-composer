@@ -15,7 +15,7 @@ if (defined('WP_CLI') && WP_CLI && php_sapi_name() === 'cli') {
 		if (file_exists( __DIR__ . '/vendor/autoload.php')) {
 			require_once  __DIR__ . '/vendor/autoload.php';
 		} else {
-			die( "Please, run composer install --no-dev first" );
+			die( sprintf('Please, run the command composer install --no-dev --working-dir="%s" first before using the plugin wp-composer%s', __DIR__, PHP_EOL) );
 		}
 	}
 

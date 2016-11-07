@@ -1,6 +1,11 @@
 <?php
 /**
- * Register and use commands with WP-CLI
+ * Manage WordPress plugin dependencies using WP-CLI and Composer.
+ *
+ * Register commands to use with WP-CLI.
+ *
+ * @author De'Yonté Wilkinson <dev@rxnlabs.com>
+ * @version 1.0.2
  */
 namespace rxnlabs;
 use \rxnlabs\Dependencies as Dependencies;
@@ -25,7 +30,7 @@ class WPCLI
 	 * WPCLI constructor.
 	 * @param \rxnlabs\Dependencies $composer
 	 */
-	public function __construct(\rxnlabs\Dependencies $composer)
+	public function __construct(Dependencies $composer)
 	{
 		// Run the Composer command.
 		$this->composer = $composer;
@@ -492,7 +497,7 @@ class WPCLI
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--type]
+	 * <command>
 	 * : Type of WordPress asset to install. The types are:
 	 * - "plugins" Will install the composer dependencies of plugins
 	 * - "themes" Will install the composer dependencies of plugins
@@ -548,9 +553,15 @@ class WPCLI
 		}
 
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
-		ob_start();
-		$installed_plugins = \WP_CLI::run_command(array('plugin', 'list'), array('format'=>'json'));
-		$plugins_found = json_decode(ob_get_clean(), true);
+
+		if (!isset($assoc_args['plugins'])) {
+			ob_start();
+			\WP_CLI::run_command(array('plugin', 'list'), array('format'=>'json'));
+			$installed_plugins = ob_get_clean();
+		}
+
+		$plugins_found = json_decode($installed_plugins, true);
+
 		$plugins_added = array();
 
 		if (!empty($composer) && is_array($plugins_found)) {
@@ -1039,6 +1050,11 @@ class WPCLI
 			$type_of_plugin = 'require-dev';
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_plugin])) {
 			$installed_plugins = array();
@@ -1050,7 +1066,7 @@ class WPCLI
 			}
 
 			if (!empty($installed_plugins)) {
-				\WP_CLI::run_command(array('plugin', 'activate', implode(' ', $installed_plugins)));
+				\WP_CLI::run_command(['plugin', 'activate', implode(' ', $installed_plugins)], [], $global_args);
 			}
 		}
 	}
@@ -1079,6 +1095,11 @@ class WPCLI
 			$type_of_theme = 'require-dev';
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_theme])) {
 			$activate_themes = array();
@@ -1090,7 +1111,7 @@ class WPCLI
 			}
 
 			if (!empty($activate_themes)) {
-				\WP_CLI::run_command(array('plugin', 'activate', implode(' ', $activate_themes)));
+				\WP_CLI::run_command(['plugin', 'activate', implode(' ', $activate_themes)], [], $global_args);
 			}
 		}
 	}
@@ -1119,6 +1140,11 @@ class WPCLI
 			$type_of_plugin = 'require-dev';
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_plugin])) {
 			$deactivate_plugins = array();
@@ -1130,7 +1156,7 @@ class WPCLI
 			}
 
 			if (!empty($deactivate_plugins)) {
-				\WP_CLI::run_command(array('plugin', 'deactivate', implode(' ', $deactivate_plugins)));
+				\WP_CLI::run_command(['plugin', 'deactivate', implode(' ', $deactivate_plugins)], [], $global_args);
 			}
 		}
 	}
@@ -1159,6 +1185,11 @@ class WPCLI
 			$type_of_theme = 'require-dev';
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_theme])) {
 			$deactivate_themes = array();
@@ -1170,7 +1201,7 @@ class WPCLI
 			}
 
 			if (!empty($deactivate_themes)) {
-				\WP_CLI::run_command(array('plugin', 'deactivate', implode(' ', $deactivate_themes)));
+				\WP_CLI::run_command(['plugin', 'deactivate', implode(' ', $deactivate_themes)], [], $global_args);
 			}
 		}
 	}
@@ -1201,6 +1232,11 @@ class WPCLI
 			$dev = true;
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_plugin])) {
 			$found_plugins = array();
@@ -1228,9 +1264,9 @@ class WPCLI
 
 					$uninstalled_plugins = implode(' ', $found_plugins);
 					if (isset($assoc_args['deactivate'])) {
-						\WP_CLI::run_command(array('plugin', 'deactivate', $uninstalled_plugins));
+						\WP_CLI::run_command(['plugin', 'deactivate', $uninstalled_plugins], [], $global_args);
 					}
-					\WP_CLI::run_command(array('plugin', 'uninstall', $uninstalled_plugins));
+					\WP_CLI::run_command(['plugin', 'uninstall', $uninstalled_plugins], [], $global_args);
 					$uninstalled_plugins = implode(', ', $found_plugins);
 
 					if ( $success === true ) {
@@ -1279,6 +1315,11 @@ class WPCLI
 			$dev = true;
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_theme])) {
 			$found_themes = array();
@@ -1307,9 +1348,9 @@ class WPCLI
 
 					$uninstalled_themes = implode(' ', $found_themes);
 					if (isset($assoc_args['deactivate'])) {
-						\WP_CLI::run_command(array('theme', 'deactivate', $uninstalled_themes));
+						\WP_CLI::run_command(['theme', 'deactivate', $uninstalled_themes], [], $global_args);
 					}
-					\WP_CLI::run_command(array('theme', 'uninstall', $uninstalled_themes));
+					\WP_CLI::run_command(['theme', 'uninstall', $uninstalled_themes], [], $global_args);
 					$uninstalled_themes = implode(', ', $found_themes);
 
 					if ( $success === true ) {
@@ -1359,6 +1400,11 @@ class WPCLI
 			$dev = true;
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_plugin])) {
 			$found_plugins = array();
@@ -1371,9 +1417,9 @@ class WPCLI
 					// since wordpress.org doesn't label plugins by these words, these are all alias to download the latest version
 					$bad_versions_of_plugins = ['*', 'dev-trunk', 'dev-master', 'master', 'dev'];
 					if (in_array($version, $bad_versions_of_plugins)) {
-						\WP_CLI::run_command(array('plugin', 'install', $plugin_slug));
+						\WP_CLI::run_command(['plugin', 'install', $plugin_slug], [], $global_args);
 					} else {
-						\WP_CLI::run_command(array('plugin', 'install', $plugin_slug), array('version' => $version));
+						\WP_CLI::run_command(['plugin', 'install', $plugin_slug], ['version' => $version], $global_args);
 					}
 
 				}
@@ -1426,6 +1472,11 @@ class WPCLI
 			$dev = true;
 		}
 
+		unset($assoc_args['dev']);
+		unset($assoc_args['file']);
+
+		$global_args = $assoc_args;
+
 		$composer = json_decode(json_encode($this->composer->readComposerFile($file)), true);
 		if (isset($composer[$type_of_theme])) {
 			$found_themes = array();
@@ -1438,9 +1489,9 @@ class WPCLI
 					// since wordpress.org doesn't label themes by these words, these are all alias to download the latest version
 					$bad_versions_of_themes = ['*','dev-trunk','dev-master','master','dev'];
 					if (in_array($version, $bad_versions_of_themes)) {
-						\WP_CLI::run_command(array('theme', 'install', $theme_slug));
+						\WP_CLI::run_command(['theme', 'install', $theme_slug], [], $global_args);
 					} else {
-						\WP_CLI::run_command(array('theme', 'install', $theme_slug), array('version'=>$version));
+						\WP_CLI::run_command(['theme', 'install', $theme_slug], ['version'=>$version], $global_args);
 					}
 
 				}
@@ -1501,16 +1552,20 @@ class WPCLI
 								$vendor_dir = $plugin . '/' . $read_composer['config']['vendor-dir'];
 							}
 
-							if (!is_dir($vendor_dir)) {
-								$plugin_folder = basename($plugin, 1);
-								\WP_CLI::line(sprintf('Installing dependencies for %s plugin...', $plugin_folder));
-								@ob_end_clean();
-								@ob_flush();
-								$working_directory = sprintf('--working-dir=%s', $plugin);
-								$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
-								$composer = new \Composer\Console\Application();
-								$composer->setAutoExit(false);
-								$composer->run();
+							if (!empty($read_composer['require'])) {
+								if (!is_dir($vendor_dir)) {
+									$plugin_folder = basename($plugin, 1);
+									\WP_CLI::line(sprintf('Installing dependencies for %s plugin...', $plugin_folder));
+									@ob_end_clean();
+									@ob_flush();
+									$working_directory = sprintf('--working-dir=%s', $plugin);
+									$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
+									$composer = new \Composer\Console\Application();
+									$composer->setAutoExit(false);
+									$composer->run();
+								}
+							} else {
+								\WP_CLI::line(sprintf('Skipping installing dependencies for %s plugin. No require packages listed.', $plugin_folder));
 							}
 						}
 					}
@@ -1548,16 +1603,21 @@ class WPCLI
 							$vendor_dir = $theme.'/'.$read_composer['config']['vendor-dir'];
 						}
 
-						if (!is_dir($vendor_dir)) {
-							$theme_folder = basename($theme, 1);
-							\WP_CLI::line(sprintf('Installing dependencies for %s theme...', $theme_folder));
-							@ob_end_clean();
-							@ob_flush();
-							$working_directory = sprintf('--working-dir=%s', $theme);
-							$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
-							$composer = new \Composer\Console\Application();
-							$composer->setAutoExit(false);
-							$composer->run();
+
+						if (!empty($read_composer['require'])) {
+							if (!is_dir($vendor_dir)) {
+								$theme_folder = basename($theme, 1);
+								\WP_CLI::line(sprintf('Installing dependencies for %s theme...', $theme_folder));
+								@ob_end_clean();
+								@ob_flush();
+								$working_directory = sprintf('--working-dir=%s', $theme);
+								$_SERVER['argv'] = array('composer', 'update', $working_directory, '--no-dev');
+								$composer = new \Composer\Console\Application();
+								$composer->setAutoExit(false);
+								$composer->run();
+							}
+						}  else {
+							\WP_CLI::line(sprintf('Skipping installing dependencies for %s theme. No require packages listed. ', $plugin_folder));
 						}
 					}
 				}
@@ -1583,15 +1643,20 @@ class WPCLI
 	 * Get the WordPress plugin install path
 	 *
 	 * @since 1.0.0
-	 * @version 1.0.0
+	 * @version 1.0.1
+	 *
+	 * @var $path string custom assets path
 	 *
 	 * @return string Path to the parent directory of the plugins and themes path
 	 */
-	public function getAssetsPath()
+	public function getAssetsPath($path = '')
 	{
-		ob_start();
-		$path = \WP_CLI::run_command(['plugin', 'path'], [], ['quiet']);
-		$path = ob_get_clean();
+		if (empty($path)) {
+			ob_start();
+			$path = \WP_CLI::run_command(['plugin', 'path'], [], ['quiet']);
+			$path = ob_get_clean();
+		}
+
 		return @dirname($path);
 	}
 }
