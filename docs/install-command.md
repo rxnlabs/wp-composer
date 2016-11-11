@@ -14,15 +14,14 @@ Install the dependencies of third-party plugins.
 ---
 #####Example
 
-Let's say that your site has the plugin example-plugin and that plugin has a composer.json file. You can install that plugin's dependencies, if those dependencies are not currently installed.
+Let's say that your site has the plugin bu-versions and that plugin has a composer.json file. You can install that plugin's dependencies, if those dependencies are not currently installed.
 
 ---
     # Install the dependencies of all of the currently installed plugins
     wp composer install plugins
 ---
 
-#####Result
-Will run the composer install command for the plugin.
+> **Note** This does *not* currently install dependency plugins needed by other plugins (e.g. an running this command on an Advanced Custom Fields Add-On will not install the Advanced Custom Fields plugin onto a site. This is something I will be working on in the future).
 
 ###themes
 
@@ -40,8 +39,7 @@ Let's say that your site has the theme example-theme and that plugin has a compo
     wp composer install themes
 ---
 
-#####Result
-Will run the composer install command for the theme.
+> **Note** Note</strong> This does **not** currently install a parent theme of a Child-theme (e.g. an running this command on a child-theme of twentysixteen will not install the twentysixteen theme onto a site. This is something I will be working on in the future).
 
 ####Options
 No options

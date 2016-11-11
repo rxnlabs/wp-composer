@@ -118,31 +118,33 @@
 <p><strong>Note</strong> Some commands will generate a composer.json file if one does not currently exist</p>
 </blockquote>
 <h3 id="plugins">plugins</h3>
-<p>Install the dependencies of third-party plugins.</p>
+<p>Install the Composer dependencies of third-party plugins.</p>
 <hr />
 <pre><code>wp composer install plugins</code></pre>
 <hr />
 <h5 id="example">Example</h5>
-<p>Let's say that your site has the plugin example-plugin and that plugin has a composer.json file. You can install that plugin's dependencies, if those dependencies are not currently installed.</p>
+<p>Let's say that your site has the plugin bu-versions and that plugin has a composer.json file. You can install that plugin's dependencies, if those dependencies are not currently installed.</p>
 <hr />
 <pre><code># Install the dependencies of all of the currently installed plugins
 wp composer install plugins</code></pre>
 <hr />
-<h5 id="result">Result</h5>
-<p>Will run the composer install command for the plugin.</p>
+<blockquote>
+<p><strong>Note</strong> This does <strong>not</strong> currently install dependency plugins needed by other plugins (e.g. an running this command on an Advanced Custom Fields Add-On will not install the Advanced Custom Fields plugin onto a site. This is something I will be working on in the future).</p>
+</blockquote>
 <h3 id="themes">themes</h3>
-<p>Install the dependencies of third-party themes.</p>
+<p>Install the Composer dependencies of third-party themes.</p>
 <hr />
 <pre><code>wp composer install themes</code></pre>
 <hr />
 <h5 id="example">Example</h5>
 <p>Let's say that your site has the theme example-theme and that theme has a composer.json file. You can install that theme's dependencies, if those dependencies are not currently installed.</p>
 <hr />
-<pre><code># Install the dependencies of all of the currently installed themes
-wp composer install theme</code></pre>
+<pre><code># Install the Composer dependencies of all of the currently installed themes
+wp composer install themes</code></pre>
 <hr />
-<h5 id="result">Result</h5>
-<p>Will run the composer install command for the theme.</p>
+<blockquote>
+<p><strong>Note</strong> This does <strong>not</strong> currently install a parent theme of a Child-theme (e.g. an running this command on a child-theme of twentysixteen will not install the twentysixteen theme onto a site. This is something I will be working on in the future).</p>
+</blockquote>
 <h4 id="options">Options</h4>
 <p>No options</p>
                 </section>
