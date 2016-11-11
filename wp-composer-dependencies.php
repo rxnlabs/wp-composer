@@ -3,7 +3,7 @@
 Plugin Name: WP Composer
 Plugin URI: https://rxnlabs.com
 Description: Manage your WordPress dependencies using Composer including themes and plugins
-Version: 1.0.0
+Version: 1.0.21
 Author: De'Yonté W.<dev@rxnlabs.com>
 Author URI: https://rxnlabs.com
 License: GPL2+

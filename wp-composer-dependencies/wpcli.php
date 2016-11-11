@@ -1522,7 +1522,7 @@ class WPCLI
 	 * If a plugin has a composer.json file, check if it's dependencies are already installed. If not, run "composer install" command
 	 *
 	 * @since 1.0.0
-	 * @version 1.0.0
+	 * @version 1.0.21
 	 *
 	 * @param $args Positional arguments passed to the command
 	 * @param $assoc_args Key based arguments passed to command
@@ -1552,9 +1552,9 @@ class WPCLI
 								$vendor_dir = $plugin . '/' . $read_composer['config']['vendor-dir'];
 							}
 
+							$plugin_folder = basename($plugin, 1);
 							if (!empty($read_composer['require'])) {
 								if (!is_dir($vendor_dir)) {
-									$plugin_folder = basename($plugin, 1);
 									\WP_CLI::line(sprintf('Installing dependencies for %s plugin...', $plugin_folder));
 									@ob_end_clean();
 									@ob_flush();
