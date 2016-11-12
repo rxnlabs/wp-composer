@@ -1,7 +1,7 @@
 ---
     title: Install Command - WP Composer
 ---
-##Install Command
+##Install Subcommands
 Install the dependencies of third-party themes and plugins.
 > **Note** Some commands will generate a composer.json file if one does not currently exist
 
