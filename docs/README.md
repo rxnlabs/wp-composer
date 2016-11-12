@@ -29,7 +29,7 @@ This installs the plugin dependencies. Then, activate the plugin.
 
 ### Optional Requirements
 
-> **Note:** Only needed if you're using as a plugin and not as a WP-CLI package. omposer is useful in a lot of other scenarios. Learn more about [Composer](https://getcomposer.org/doc/00-intro.md).
+> **Note:** Only needed if you're using as a plugin and not as a WP-CLI package. Composer is useful in a lot of other scenarios. Learn more about [Composer](https://getcomposer.org/doc/00-intro.md).
 
 * [Composer](https://getcomposer.org/)
 
@@ -39,7 +39,7 @@ After installing as a WP-CLI package or as a plugin, run `wp composer --help` to
 ## Commands
 | Command          | Description                |
 | ---------------- | -------------------------- |
-| [`composer plugins`](plugins-command.md) | Manage dependencies of installed pluginsss |
+| [`composer plugins`](plugins-command.md) | Manage dependencies of installed plugins |
 | [`composer themes`](themes-command.md)  | Manage dependencies of installed themes |
 | [`composer plugin`](plugin-command.md)  | Manage dependencies of a specific plugin |
 | [`composer theme`](theme-command.md)  | Manage dependencies of a specific theme |

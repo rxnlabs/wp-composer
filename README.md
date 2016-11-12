@@ -26,7 +26,7 @@ This installs the plugin dependencies. Then, activate the plugin.
 
 ### Optional Requirements
 
-> **Note:** Only needed if you're using as a plugin and not as a WP-CLI package. omposer is useful in a lot of other scenarios. Learn more about [Composer](https://getcomposer.org/doc/00-intro.md).
+> **Note:** Only needed if you're using as a plugin and not as a WP-CLI package. Composer is useful in a lot of other scenarios. Learn more about [Composer](https://getcomposer.org/doc/00-intro.md).
 
 * [Composer](https://getcomposer.org/)
 
@@ -38,13 +38,16 @@ After installing as a WP-CLI package or as a plugin, run `wp composer --help` to
 
 | Command          | Description                |
 | ---------------- | -------------------------- |
-| `composer plugins` | Manage dependencies of installed plugins |
-| `composer themes`  | Manage dependencies of installed themes |
-| `composer plugin`  | Manage dependencies of a specific plugin |
-| `composer theme`  | Manage dependencies of a specific theme |
-| `composer add`  | Add installed plugins and themes to composer.json |
-| `composer install`  | Install the dependencies of third-party themes and plugins |
+| [`composer plugins`](https://rxnlabs.github.io/wp-composer/plugins-command.html) | Manage dependencies of installed plugins |
+| [`composer themes`](https://rxnlabs.github.io/wp-composer/themes-command.html)  | Manage dependencies of installed themes |
+| [`composer plugin`](https://rxnlabs.github.io/wp-composer/plugin-command.html)  | Manage dependencies of a specific plugin |
+| [`composer theme`](https://rxnlabs.github.io/wp-composer/theme-command.html)  | Manage dependencies of a specific theme |
+| [`composer add`](https://rxnlabs.github.io/wp-composer/add-command.html)  | Add installed plugins and themes to composer.json |
+| [`composer install`](https://rxnlabs.github.io/wp-composer/install-command.html)  | Install the dependencies of third-party themes and plugins |
 
+## Hooks
+
+List of [hooks](https://rxnlabs.github.io/wp-composer/hooks.html) available for the plugin
 
 ## Documentation and Examples
 
