@@ -114,3 +114,7 @@ td {
     margin-top: 15px;
     background-color: transparent;
 }
+
+#content img {
+    width: 100%;
+}

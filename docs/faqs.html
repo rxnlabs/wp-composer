@@ -146,6 +146,15 @@
 <li>This plugin currently does <strong>not</strong> support premium plugins and themes, as well as plugins and themes not hosted on WordPress.org. This is a limitation I would like to fix at some point. In the meantime, you can manage your premium plugins in other ways such as submodules, subtrees, and plenty of other ways.</li>
 </ul></li>
 </ul>
+<h2 id="frequently-asked-questions-that-someone-has-asked">Frequently Asked Questions that someone has asked</h2>
+<ul>
+<li>I see this is a wrapper for WPackagist. I don't mind but I don't see the huge benefit either other than saving you from having to type "wpackagist-plugin/slug", or am I missing something?
+<ul>
+<li>In essence, this is very similar to just using composer and running the command. The biggest benefit is just using WP-CLI commands and using the command of the package to automatically add your plugins to the composer.json file. 
+<br>
+Also it <a href="https://rxnlabs.github.io/wp-composer/hooks.html" title="Hooks for WP-Composer">hooks into the command</a> wp plugin install plugin-name and will automatically add that plugin to the composer.json file. It also hooks into wp plugin uninstall plugin-name command to remove the plugin you uninstalled from your composer.json file. This also applies to the wp theme commands. It also just works well for bulk installing your plugins using wp-cli, though you could do this WP-CLI as well.</li>
+</ul></li>
+</ul>
                 </section>
 
             </div>
