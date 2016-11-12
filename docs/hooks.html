@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Install Command - WP Composer</title>
+        <title>List of Hooks Available - WP Composer</title>
 
         <link rel="stylesheet" href="https://rxnlabs.github.io/wp-composer/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://rxnlabs.github.io/wp-composer/css/font-awesome.min.css">
@@ -16,7 +16,7 @@
           "@type": "Article",
           "author": "De'Yonté W.",
           "datePublished": "2016-10-06",
-          "name": "Install Command - WP Composer"
+          "name": "List of Hooks Available - WP Composer"
         }
         </script>
         <script>
@@ -35,7 +35,7 @@
         <header class="navbar navbar-default navbar-fixed-top">
 
             <a class="navbar-brand" href="https://rxnlabs.github.io/wp-composer/">
-                Install Command - WP Composer
+                List of Hooks Available - WP Composer
                 <small class="hidden-xs hidden-sm">
                     Manage your WordPress dependencies
                 </small>
@@ -126,41 +126,26 @@
 
                 
                 <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
-                    <h2 id="install-subcommands">Install Subcommands</h2>
-<p>Install the dependencies of third-party themes and plugins.</p>
-<blockquote>
-<p><strong>Note</strong> Some commands will generate a composer.json file if one does not currently exist</p>
-</blockquote>
-<h3 id="plugins">plugins</h3>
-<p>Install the Composer dependencies of third-party plugins.</p>
-<hr />
-<pre><code>wp composer install plugins</code></pre>
-<hr />
-<h5 id="example">Example</h5>
-<p>Let's say that your site has the plugin bu-versions and that plugin has a composer.json file. You can install that plugin's dependencies, if those dependencies are not currently installed.</p>
-<hr />
-<pre><code># Install the dependencies of all of the currently installed plugins
-wp composer install plugins</code></pre>
-<hr />
-<blockquote>
-<p><strong>Note</strong> This does <strong>not</strong> currently install dependency plugins needed by other plugins (e.g. an running this command on an Advanced Custom Fields Add-On will not install the Advanced Custom Fields plugin onto a site. This is something I will be working on in the future).</p>
-</blockquote>
-<h3 id="themes">themes</h3>
-<p>Install the Composer dependencies of third-party themes.</p>
-<hr />
-<pre><code>wp composer install themes</code></pre>
-<hr />
-<h5 id="example">Example</h5>
-<p>Let's say that your site has the theme example-theme and that theme has a composer.json file. You can install that theme's dependencies, if those dependencies are not currently installed.</p>
-<hr />
-<pre><code># Install the Composer dependencies of all of the currently installed themes
-wp composer install themes</code></pre>
-<hr />
-<blockquote>
-<p><strong>Note</strong> This does <strong>not</strong> currently install a parent theme of a Child-theme (e.g. an running this command on a child-theme of twentysixteen will not install the twentysixteen theme onto a site. This is something I will be working on in the future).</p>
-</blockquote>
-<h4 id="options">Options</h4>
-<p>No options</p>
+                    <h1 id="hooks">Hooks</h1>
+<h2 id="hooks-used-by-this-plugin">Hooks used by this plugin</h2>
+<p>This plugin hooks into the command <code>`wp plugin install plugin-name`</code> and will automatically add that plugin to the composer.json file.</p>
+<h3 id="example">Example</h3>
+<pre><code>wp plugin install buddypress</code></pre>
+<h3 id="result">Result</h3>
+<img src="images/wp-composer-plugin-install-hook.gif" alt="WP Composer Plugin Install Hook" title="WP Composer Plugin Install Hook" />
+<br>
+<p>It also hooks into the command <code>`wp plugin uninstall plugin-name`</code> by automatically removing plugin-name from the composer.json file</p>
+<h3 id="example">Example</h3>
+<pre><code>wp plugin uninstall buddypress --deactivate</code></pre>
+<h3 id="result">Result</h3>
+<img src="images/wp-composer-plugin-uninstall-hook.gif" alt="WP Composer Plugin Uninstall Hook" title="WP Composer Plugin Uninstall Hook" />
+<br>
+<p>This also applies to the <code>`wp theme install theme-name`</code>
+<pre><code>wp theme install twentysixteen</code></pre>
+<p>This also applies to the <code>wp theme uninstall theme-name</code>
+<pre><code>wp theme uninstall twentysixteen  --deactivate</code></pre>
+<h2 id="hooks-available-for-this-plugin">Hooks available for this plugin</h2>
+<p>None at this time. If you're writing a WP-CLI command, you can use the hooks provided by <a href="https://wp-cli.org/docs/internal-api/wp-cli-add-hook/">WP-CLI add_hook function</a></p>
                 </section>
 
             </div>

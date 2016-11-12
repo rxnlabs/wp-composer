@@ -55,23 +55,19 @@
 
                         <ul class="nav nav-pills nav-stacked">
                             
-                                <li class=" README.md  home">
+                                <li class="commands.md  home">
                                     <a href="https://rxnlabs.github.io/wp-composer/index.html">
                                         Home Page
                                     </a>
-                                                                        <ul>
-                                                                        </ul>
                                                                     </li>
                             
-                                <li class=" README.md  installation">
+                                <li class="installation.md  installation">
                                     <a href="https://rxnlabs.github.io/wp-composer/installation.html">
                                         Installation
                                     </a>
-                                                                        <ul>
-                                                                        </ul>
                                                                     </li>
                             
-                                <li class=" README.md  commands">
+                                <li class="commands.md  commands">
                                     <a href="https://rxnlabs.github.io/wp-composer/commands.html">
                                         Commands
                                     </a>
@@ -109,19 +105,20 @@
                                                                         </ul>
                                                                     </li>
                             
-                                <li class=" README.md  faqs">
+                                <li class="commands.md  faqs">
+                                    <a href="https://rxnlabs.github.io/wp-composer/hooks.html">
+                                        Hooks
+                                    </a>
+                                                                    </li>
+                                <li class="commands.md  faqs">
                                     <a href="https://rxnlabs.github.io/wp-composer/faqs.html">
                                         FAQs
                                     </a>
-                                                                        <ul>
-                                                                        </ul>
                                                                     </li>
-                                                                    <li class=" roadmap.md  roadmap">
+                                                                    <li class="roadmap.md  roadmap">
                                     <a href="https://rxnlabs.github.io/wp-composer/roadmap.html">
                                         Roadmap
                                     </a>
-                                                                        <ul>
-                                                                        </ul>
                                                                     </li>
                                                     </ul>
 
@@ -130,7 +127,7 @@
                 
                 <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
                     <h1 id="wp-composer">WP Composer</h1>
-<p>WP Composer is a WP-CLI package for managing your WordPress theme and plugin dependencies. By using the power of WP-CLI and <a href="https://getcomposer.org/doc/00-intro.html">composer</a>, you can declare the themes and plugins your WordPress site depends on.</p>
+<p>WP Composer is a WP-CLI package for managing your WordPress theme and plugin dependencies. By using the power of WP-CLI and <a href="https://getcomposer.org/doc/00-intro.html">Composer</a>, you can declare the themes and plugins your WordPress site depends on.</p>
 <h2 id="how-it-works">How it works</h2>
 <p>Your themes and plugins will be stored in a <a href="https://getcomposer.org/doc/01-basic-usage.html">composer.json</a> file along, the same way you would manage other PHP dependencies.</p>
 <h2 id="installation">Installation</h2>
@@ -138,14 +135,24 @@
 <hr />
 <pre><code>wp package install rxnlabs/wp-composer-dependencies</code></pre>
 <hr />
-<h3 id="installing-as-a-plugin">Installing as a plugin</h3>
+<h3 id="installing-as-a-plugin">Installing as a plugin (you need to have</h3>
 <p>Clone this repo into plugins/ folder of your WordPress site, run:</p>
 <hr />
-<pre><code>composer install --no-dev</code></pre>
+<pre><code>composer install --no-dev --prefer-dist</code></pre>
 <hr />
 <p>This installs the plugin dependencies. Then, activate the plugin.</p>
-<h3 id="requirements">Requirements</h3>
-<p>Requires WP-CLI version 0.24.0 and up.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>PHP 5.4 and up</li>
+<li>Requires <a href="http://wp-cli.org/">WP-CLI</a> version 0.24.0 and up.</li>
+</ul>
+<h3 id="optional-requirements">Optional Requirements</h3>
+<blockquote>
+<p><strong>Note:</strong> Only needed if you're using as a plugin and not as a WP-CLI package. Composer is useful in a lot of other scenarios. Learn more about <a href="https://getcomposer.org/doc/00-intro.md">Composer</a>.</p>
+</blockquote>
+<ul>
+<li><a href="https://getcomposer.org/">Composer</a></li>
+</ul>
 <p>After installing as a WP-CLI package or as a plugin, run <code>wp composer --help</code> to see the list of commands and subcommands available.
 <img src="images/wp-composer-help.png" alt="WP Composer Help Output" /></p>
 <h2 id="commands">Commands</h2>
