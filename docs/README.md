@@ -12,7 +12,7 @@ Your themes and plugins will be stored in a [composer.json](https://getcomposer.
     wp package install rxnlabs/wp-composer-dependencies
 ---
 
-### Installing as a plugin
+### Installing as a plugin (you need to have Composer installed)
 
 Clone this repo into plugins/ folder of your WordPress site, run:
 
